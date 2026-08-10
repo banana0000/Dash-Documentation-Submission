@@ -107,7 +107,7 @@ _PETAL_BASE_STYLE = {
 
 def _petal(color, angle):
     style = {**_PETAL_BASE_STYLE, "backgroundColor": color, "transform": f"rotate({angle}deg)"}
-    return html.Div(id={"type": "mixer-petal", "color": color}, n_clicks=0, style=style)
+    return html.Div(id={"type": "picker-petal", "color": color}, n_clicks=0, style=style)
 
 
 _RING_COUNT = 12
@@ -140,7 +140,7 @@ def _ring_swatch(color, angle_deg):
         "boxShadow": "0 2px 6px rgba(0, 0, 0, 0.25)",
         "border": "2px solid rgba(255, 255, 255, 0.6)",
     }
-    return html.Div(id={"type": "mixer-ring", "color": color}, n_clicks=0, style=style)
+    return html.Div(id={"type": "picker-ring", "color": color}, n_clicks=0, style=style)
 
 
 _SHAPES = ["Wheel", "Flower", "Ring"]
@@ -157,7 +157,7 @@ DOC_TEXT = (
     "`dcc.Graph` showing a static HSV raster (hue by angle, saturation by "
     "radius); clicking it reads the exact pixel back off `clickData`. Flower "
     "and Ring are `html.Div`s carrying a pattern-matching id — "
-    '`{"type": "mixer-petal"/"mixer-ring", "color": <hex>}` — so one '
+    '`{"type": "picker-petal"/"picker-ring", "color": <hex>}` — so one '
     "callback can listen to all three shapes at once and tell them apart "
     "via `ctx.triggered_id`. All three stay mounted; only their `display` "
     "style toggles when you switch shapes."
@@ -174,7 +174,7 @@ _WHEEL_BOX_STYLE = {
 }
 
 _wheel_graph = dcc.Graph(
-    id="mixer-wheel",
+    id="picker-wheel",
     figure=_wheel_figure(),
     config={"displayModeBar": False, "scrollZoom": False},
     style={"width": _WHEEL_SIZE, "height": _WHEEL_SIZE, "cursor": "crosshair"},
@@ -183,7 +183,7 @@ _wheel_graph = dcc.Graph(
 _wheel = html.Div(
     dmc.FloatingTooltip(
         html.Div(_wheel_graph, style=_WHEEL_BOX_STYLE),
-        id="mixer-wheel-tooltip",
+        id="picker-wheel-tooltip",
         label=_DEFAULT_COLOR,
         color="dark",
     )
@@ -204,7 +204,7 @@ _copy_button = dmc.Tooltip(
             gap=6,
             wrap="nowrap",
         ),
-        id="llm-copy-button-color-mixer",
+        id="llm-copy-button-color-picker",
         variant="subtle",
         color="gray",
         size="compact-sm",
@@ -247,13 +247,13 @@ app.layout = dmc.MantineProvider(
                 dmc.Title(NAME, order=2),
                 dmc.Text(DESCRIPTION, size="sm", c="dimmed", ta="center"),
                 dmc.Box(_copy_button),
-                dmc.SegmentedControl(id="mixer-shape", data=_SHAPES, value="Wheel"),
-                dmc.Text(id="mixer-hint", size="sm", c="dimmed"),
-                html.Div(_wheel, id="mixer-shape-wheel"),
-                html.Div(_flower, id="mixer-shape-flower", style={"display": "none"}),
-                html.Div(_ring, id="mixer-shape-ring", style={"display": "none"}),
-                dmc.Box(id="mixer-center", style=_CENTER_BASE_STYLE),
-                dmc.Code(id="mixer-hex"),
+                dmc.SegmentedControl(id="picker-shape", data=_SHAPES, value="Wheel"),
+                dmc.Text(id="picker-hint", size="sm", c="dimmed"),
+                html.Div(_wheel, id="picker-shape-wheel"),
+                html.Div(_flower, id="picker-shape-flower", style={"display": "none"}),
+                html.Div(_ring, id="picker-shape-ring", style={"display": "none"}),
+                dmc.Box(id="picker-center", style=_CENTER_BASE_STYLE),
+                dmc.Code(id="picker-hex"),
                 dmc.Divider(w="100%"),
                 dmc.Stack(
                     gap="xs",
@@ -270,11 +270,11 @@ app.layout = dmc.MantineProvider(
 
 
 @callback(
-    Output("mixer-shape-wheel", "style"),
-    Output("mixer-shape-flower", "style"),
-    Output("mixer-shape-ring", "style"),
-    Output("mixer-hint", "children"),
-    Input("mixer-shape", "value"),
+    Output("picker-shape-wheel", "style"),
+    Output("picker-shape-flower", "style"),
+    Output("picker-shape-ring", "style"),
+    Output("picker-hint", "children"),
+    Input("picker-shape", "value"),
 )
 def switch_shape(shape):
     styles = {name: {"display": "block" if name == shape else "none"} for name in _SHAPES}
@@ -282,8 +282,8 @@ def switch_shape(shape):
 
 
 @callback(
-    Output("mixer-wheel-tooltip", "label"),
-    Input("mixer-wheel", "hoverData"),
+    Output("picker-wheel-tooltip", "label"),
+    Input("picker-wheel", "hoverData"),
 )
 def show_hover_hex(hover_data):
     if not hover_data:
@@ -293,22 +293,22 @@ def show_hover_hex(hover_data):
 
 
 @callback(
-    Output("mixer-center", "style"),
-    Output("mixer-hex", "children"),
-    Output("mixer-wheel", "figure"),
-    Input("mixer-wheel", "clickData"),
-    Input({"type": "mixer-petal", "color": ALL}, "n_clicks"),
-    Input({"type": "mixer-ring", "color": ALL}, "n_clicks"),
+    Output("picker-center", "style"),
+    Output("picker-hex", "children"),
+    Output("picker-wheel", "figure"),
+    Input("picker-wheel", "clickData"),
+    Input({"type": "picker-petal", "color": ALL}, "n_clicks"),
+    Input({"type": "picker-ring", "color": ALL}, "n_clicks"),
 )
 def pick_color(click_data, _petal_clicks, _ring_clicks):
     triggered = ctx.triggered_id
     figure = no_update
-    if triggered == "mixer-wheel" and click_data:
+    if triggered == "picker-wheel" and click_data:
         point = click_data["points"][0]
         x, y = point["x"], point["y"]
         hex_color = _hex_from_pixel(x, y)
         figure = _wheel_figure((x, y))
-    elif isinstance(triggered, dict) and triggered.get("type") in ("mixer-petal", "mixer-ring"):
+    elif isinstance(triggered, dict) and triggered.get("type") in ("picker-petal", "picker-ring"):
         hex_color = triggered["color"]
     else:
         hex_color = _DEFAULT_COLOR

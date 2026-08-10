@@ -4,7 +4,7 @@ import dash_mantine_components as dmc
 from dash import register_page
 from dash_iconify import DashIconify
 
-from components.color_mixer_widget import build_layout
+from components.color_picker_widget import build_layout
 from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
 
 NAME = "Color Picker *"
@@ -12,7 +12,7 @@ DESCRIPTION = "A clickable flower-shaped color picker built with plain Dash html
 
 register_page(
     __name__,
-    "/color-mixer",
+    "/color-picker",
     name=NAME,
     title=PAGE_TITLE_PREFIX + NAME,
     description=DESCRIPTION,
@@ -23,19 +23,19 @@ register_page(
 DOC_TEXT = (
     "Click any petal of the flower and its center blooms in that color; the "
     "hex code is shown underneath. Six `html.Div` petals, each carrying a "
-    'pattern-matching id `{"type": "mixer-petal", "color": <hex>}`, are '
+    'pattern-matching id `{"type": "picker-petal", "color": <hex>}`, are '
     "absolutely positioned around a shared pivot and rotated 60° apart — no "
     "image, canvas or SVG. One callback listens to every petal's `n_clicks` "
     "at once and reads the clicked color straight off `ctx.triggered_id`."
 )
 
 # dash-improve-my-llms picks this up automatically and serves it verbatim at
-# /color-mixer/llms.txt — see pages/home.py for the same pattern.
+# /color-picker/llms.txt — see pages/home.py for the same pattern.
 LLMS_DOC = f"# {NAME}\n\n> {DESCRIPTION}\n\n{DOC_TEXT}\n"
 
 _CODE_FILES = [
-    ("pages/color_mixer.py", "python", "devicon:python"),
-    ("components/color_mixer_widget.py", "python", "devicon:python"),
+    ("pages/color_picker.py", "python", "devicon:python"),
+    ("components/color_picker_widget.py", "python", "devicon:python"),
 ]
 
 _code_tabs = dmc.CodeHighlightTabs(
@@ -59,7 +59,7 @@ _copy_button = dmc.Tooltip(
             gap=6,
             wrap="nowrap",
         ),
-        id="llm-copy-button-color-mixer",
+        id="llm-copy-button-color-picker",
         variant="subtle",
         color="gray",
         size="compact-sm",
@@ -71,7 +71,7 @@ _copy_button = dmc.Tooltip(
 )
 
 layout = dmc.Container(
-    id="m2d-page-color-mixer",
+    id="m2d-page-color-picker",
     size="lg",
     py="xl",
     children=[
