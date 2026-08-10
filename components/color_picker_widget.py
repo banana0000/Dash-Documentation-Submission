@@ -61,10 +61,20 @@ def _hex_from_pixel(x, y, size=_WHEEL_SIZE):
 
 
 _WHEEL_RGBA = _build_wheel_rgba()
+_WHEEL_HEX = [
+    ["#{:02x}{:02x}{:02x}".format(*pixel[:3]) for pixel in row]
+    for row in _WHEEL_RGBA
+]
 
 
 def _wheel_figure(marker_xy=None):
-    fig = go.Figure(go.Image(z=_WHEEL_RGBA, hoverinfo="skip"))
+    fig = go.Figure(
+        go.Image(
+            z=_WHEEL_RGBA,
+            customdata=_WHEEL_HEX,
+            hovertemplate="%{customdata}<extra></extra>",
+        )
+    )
     if marker_xy is not None:
         mx, my = marker_xy
         fig.add_trace(
@@ -86,7 +96,7 @@ def _wheel_figure(marker_xy=None):
         paper_bgcolor="white",
         plot_bgcolor="white",
         dragmode=False,
-        hovermode="closest",
+        hoverlabel=dict(font_family="monospace"),
     )
     return fig
 
@@ -101,21 +111,16 @@ _WHEEL_BOX_STYLE = {
 
 
 def _build_wheel():
+    # Plotly's own hover box (not a dmc.Tooltip) shows the hex under the
+    # cursor — a dmc.FloatingTooltip wrapper here previously intercepted
+    # pointer events and broke clicking the graph entirely.
     graph = dcc.Graph(
         id="picker-wheel",
         figure=_wheel_figure(),
         config={"displayModeBar": False, "scrollZoom": False},
         style={"width": _WHEEL_SIZE, "height": _WHEEL_SIZE, "cursor": "crosshair"},
-        clear_on_unhover=True,
     )
-    # A real dmc.FloatingTooltip (Mantine's Tooltip.Floating) that tracks the
-    # cursor, driven by hoverData — Plotly's own hover box is disabled above.
-    return dmc.FloatingTooltip(
-        html.Div(graph, style=_WHEEL_BOX_STYLE),
-        id="picker-wheel-tooltip",
-        label=_DEFAULT_COLOR,
-        color="dark",
-    )
+    return html.Div(graph, style=_WHEEL_BOX_STYLE)
 
 
 # ---------------------------------------------------------------------------
@@ -242,17 +247,6 @@ _HINTS = {
 def switch_shape(shape):
     styles = {name: {"display": "block" if name == shape else "none"} for name in _SHAPES}
     return styles["Wheel"], styles["Flower"], styles["Ring"], _HINTS.get(shape, "")
-
-
-@callback(
-    Output("picker-wheel-tooltip", "label"),
-    Input("picker-wheel", "hoverData"),
-)
-def show_hover_hex(hover_data):
-    if not hover_data:
-        return _DEFAULT_COLOR
-    point = hover_data["points"][0]
-    return _hex_from_pixel(point["x"], point["y"])
 
 
 @callback(

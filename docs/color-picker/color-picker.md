@@ -37,22 +37,19 @@ Source code:
 **Wheel** is a `dcc.Graph` showing a static HSV raster (hue by angle,
 saturation by radius, value fixed at 1) built once at import time with
 `colorsys.hsv_to_rgb`, sitting on an explicit white card (`backgroundColor:
-"white"`) so it reads the same regardless of light/dark theme. It's wrapped
-in a `dmc.FloatingTooltip` — a real Mantine tooltip that tracks the cursor —
-whose `label` a small callback keeps in sync with `hoverData`, so hovering
-shows the exact hex code under the pointer. Plotly's own hover box is
-turned off (`hoverinfo="skip"`) so only the Mantine tooltip shows:
+"white"`) so it reads the same regardless of light/dark theme. Each pixel
+also carries its hex string as `customdata`, so Plotly's own hover box shows
+the exact color under the pointer via a `hovertemplate` — a `dmc.Tooltip`
+wrapper was tried here first, but its pointer-tracking overlay intercepted
+clicks before they reached the graph, so the hover box stays native to
+Plotly instead:
 
 ```python
-@callback(
-    Output("picker-wheel-tooltip", "label"),
-    Input("picker-wheel", "hoverData"),
+go.Image(
+    z=_WHEEL_RGBA,
+    customdata=_WHEEL_HEX,
+    hovertemplate="%{customdata}<extra></extra>",
 )
-def show_hover_hex(hover_data):
-    if not hover_data:
-        return _DEFAULT_COLOR
-    point = hover_data["points"][0]
-    return _hex_from_pixel(point["x"], point["y"])
 ```
 
 Clicking the wheel fires `clickData`, which carries the exact pixel the
