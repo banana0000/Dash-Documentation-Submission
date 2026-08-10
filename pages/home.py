@@ -24,7 +24,7 @@ directory = "docs"
 # read the home page markdown
 md_file = Path("pages") / "home.md"
 
-post = frontmatter.loads(md_file.read_text())
+post = frontmatter.loads(md_file.read_text(encoding="utf-8"))
 metadata, content = post.metadata, post.content
 
 # Module-level LLMS_DOC — dash-improve-my-llms 2.0 picks this up automatically

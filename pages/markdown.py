@@ -70,7 +70,7 @@ def _expand_source_directives(markdown_content: str) -> str:
         file_path = match.group(1).strip()
         try:
             full = Path(file_path)
-            content = full.read_text()
+            content = full.read_text(encoding="utf-8")
             ext = full.suffix.lstrip('.').lower()
             lang = _LANG_MAP.get(ext, ext or 'text')
             tail = '' if content.endswith('\n') else '\n'
@@ -106,7 +106,7 @@ parse = create_parser(directives)
 
 for file in files:
     logger.info("Loading %s..", file)
-    metadata, content = frontmatter.parse(file.read_text())
+    metadata, content = frontmatter.parse(file.read_text(encoding="utf-8"))
     metadata = Meta(**metadata)
 
     # Store raw markdown content in NAME_CONTENT_MAP for the LLM copy button.
