@@ -10,11 +10,21 @@ from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
 NAME = "Color Picker *"
 DESCRIPTION = "A clickable flower-shaped color picker built with plain Dash html components."
 
+# NAV_NAME (not NAME) drives both the sidebar label and the <title> tag:
+# dash-improve-my-llms's prerender injection overwrites <title> from the
+# registered page's `name`, ignoring `title=` entirely. Reusing NAME here
+# would make this page and the docs demo (docs/color-picker/color-picker.md,
+# same NAME) render an identical sidebar entry and an identical <title> —
+# indistinguishable in the nav and a duplicate-title flag to any crawler
+# comparing head metadata site-wide. The on-page heading below still uses
+# the clean NAME.
+NAV_NAME = NAME + " — Live Page"
+
 register_page(
     __name__,
     "/color-picker",
-    name=NAME,
-    title=PAGE_TITLE_PREFIX + NAME,
+    name=NAV_NAME,
+    title=PAGE_TITLE_PREFIX + NAV_NAME,
     description=DESCRIPTION,
     image_url=OG_IMAGE_URL,
     icon="mdi:palette-outline",
@@ -29,20 +39,28 @@ DOC_TEXT = (
     "at once and reads the clicked color straight off `ctx.triggered_id`."
 )
 
-# dash-improve-my-llms picks this up automatically and serves it verbatim at
-# /color-picker/llms.txt — see pages/home.py for the same pattern.
-LLMS_DOC = f"# {NAME}\n\n> {DESCRIPTION}\n\n{DOC_TEXT}\n"
-
 _CODE_FILES = [
     ("pages/color_picker.py", "python", "devicon:python"),
     ("components/color_picker_widget.py", "python", "devicon:python"),
 ]
+_CODE_SOURCE = {path: Path(path).read_text(encoding="utf-8") for path, _lang, _icon in _CODE_FILES}
+
+# dash-improve-my-llms picks this up automatically and serves it verbatim at
+# /color-picker/llms.txt — see pages/home.py for the same pattern. The source
+# is embedded (not just described) so the crawler-facing prerender carries as
+# much real content as the docs demo's expanded `.. source::` directives do.
+LLMS_DOC = (
+    f"# {NAME}\n\n> {DESCRIPTION}\n\n{DOC_TEXT}\n\n"
+    + "\n\n".join(
+        f"## {path}\n\n```python\n{source}```" for path, source in _CODE_SOURCE.items()
+    )
+)
 
 _code_tabs = dmc.CodeHighlightTabs(
     code=[
         {
             "fileName": Path(path).name,
-            "code": Path(path).read_text(encoding="utf-8"),
+            "code": _CODE_SOURCE[path],
             "language": language,
             "icon": DashIconify(icon=icon),
         }
