@@ -95,24 +95,6 @@ a picker's state.
 
 ---
 
-### The Native Page
-
-The same widget also ships as a first-class page at `/color-picker`
-(`pages/color_picker.py`), wired through `register_page` instead of this
-markdown file. It shares its layout and callbacks with this demo via
-`components/color_picker_widget.py`, and adds its own `LLMS_DOC` — served at
-`/color-picker/llms.txt` — plus a "Copy llms.txt URL" button, matching the
-pattern from **Documenting a Page for AI Assistants** on the
-[Getting Started](/getting-started) page.
-
-Source code:
-
-.. source::pages/color_picker.py
-    :defaultExpanded: false
-    :withExpandedButton: true
-
----
-
 ### The Standalone App
 
 `color_picker_app.py` is a fully independent, single-file Dash app — its own

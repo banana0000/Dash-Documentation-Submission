@@ -23,15 +23,12 @@ One color picker, three shapes. A `dmc.SegmentedControl` switches between:
 
 All three feed the same center swatch and hex readout, and stay mounted in the DOM at once — switching shapes never destroys a picker's state.
 
-The picker ships in three places in this repo:
+The picker ships in two places in this repo:
 
 | Where | File | Notes |
 |---|---|---|
-| Live page | [`pages/color_picker.py`](pages/color_picker.py) | Registered at `/color-picker`, with its own `llms.txt` |
 | Docs demo | [`docs/color-picker/color-picker.md`](docs/color-picker/color-picker.md) | Registered at `/examples/color-picker`, walks through how it works |
 | Standalone app | [`color_picker_app.py`](color_picker_app.py) | Fully independent single-file Dash app, no imports from `pages/` or `components/` |
-
-The page and docs demo share their layout/callbacks via [`components/color_picker_widget.py`](components/color_picker_widget.py).
 
 ---
 
@@ -57,7 +54,7 @@ See [`docs/color-picker/color-picker.md`](docs/color-picker/color-picker.md) for
 
 ## Running it
 
-### Full site (docs demo + live page)
+### Full site (docs demo)
 
 ```bash
 pip install -r requirements.txt
@@ -67,7 +64,7 @@ npm install
 ./scripts/dev.sh          # or: python run.py
 ```
 
-Visit **http://localhost:8559**, then go to `/color-picker` (the live page) or `/examples/color-picker` (the docs demo with source walkthrough).
+Visit **http://localhost:8559**, then go to `/examples/color-picker` (the docs demo with source walkthrough).
 
 ### Standalone
 
@@ -84,10 +81,6 @@ Serves on **http://localhost:8560** — a single-file app with no dependency on 
 ```
 .
 ├── color_picker_app.py            # Standalone single-file version
-├── components/
-│   └── color_picker_widget.py     # Shared layout + callbacks (wheel/flower/ring)
-├── pages/
-│   └── color_picker.py            # Live page at /color-picker
 ├── docs/
 │   └── color-picker/
 │       ├── color-picker.md        # Docs demo at /examples/color-picker
