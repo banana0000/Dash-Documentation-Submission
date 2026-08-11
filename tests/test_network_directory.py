@@ -130,7 +130,7 @@ def test_wordmark_label_carries_the_real_domain():
 def test_wordmark_reaches_the_rendered_view(client):
     from conftest import BROWSER_ACCEPT
 
-    html = client.get("/networks/llms.txt", accept=BROWSER_ACCEPT).text
+    html = client.get("/examples/color-picker/llms.txt", accept=BROWSER_ACCEPT).text
     svg = re.search(r'<svg class="mk-wordmark".*?</svg>', html, re.S)
     assert svg, "the wordmark did not reach the viewer banner"
 

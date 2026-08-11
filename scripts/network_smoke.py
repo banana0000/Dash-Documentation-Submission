@@ -64,7 +64,7 @@ STUB_MARKER = "This page contains interactive content that requires JavaScript"
 # This app's one identity (lib/constants.SITE_BRAND). tests/test_site_identity
 # asserts every local surface carries it; this pins the DEPLOYED artifact to
 # it, which is the half no unit test can reach.
-SITE_H1 = "# Dash Documentation Boilerplate — the 2plot network's template"
+SITE_H1 = "# Color Picker"
 
 # The container port. Matches the Dockerfile's EXPOSE and CMD.
 DEFAULT_BASE_URL = "http://localhost:8550"
@@ -174,8 +174,8 @@ def satellite_checks(base: str) -> None:
         expect(HUB_URL in text, f"the directory does not name {HUB_URL}")
 
     def page_llms_nav():
-        status, _, text = get("/backends/llms.txt")
-        expect(status == 200, f"/backends/llms.txt {status}")
+        status, _, text = get("/examples/color-picker/llms.txt")
+        expect(status == 200, f"/examples/color-picker/llms.txt {status}")
         expect("/llms.txt" in text, "llms_nav header missing — page doc is a dead end")
 
     def hidden_pages_404():
@@ -229,14 +229,14 @@ def satellite_checks(base: str) -> None:
 
     def agents_and_browsers_get_different_types():
         # One URL, two audiences, and a `Vary` that stops a CDN mixing them.
-        status, md_headers, md = get("/backends/llms.txt")
-        expect(status == 200, f"/backends/llms.txt {status}")
+        status, md_headers, md = get("/examples/color-picker/llms.txt")
+        expect(status == 200, f"/examples/color-picker/llms.txt {status}")
         expect(md_headers.get("content-type", "").startswith("text/markdown"),
                f"agents got {md_headers.get('content-type')!r}")
         expect("<!DOCTYPE html>" not in md, "viewer chrome reached an agent")
 
         _status, html_headers, html = get(
-            "/backends/llms.txt",
+            "/examples/color-picker/llms.txt",
             headers={"Accept": "text/html,application/xhtml+xml,*/*;q=0.8"})
         expect("text/html" in html_headers.get("content-type", ""),
                f"browsers got {html_headers.get('content-type')!r}")

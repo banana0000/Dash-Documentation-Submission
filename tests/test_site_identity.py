@@ -31,7 +31,7 @@ from lib.constants import (
 # Spelled out rather than imported, so that renaming the constant cannot
 # silently rename the site. Changing the brand should require changing this
 # line, deliberately.
-EXPECTED_BRAND = "Dash Documentation Boilerplate — the 2plot network's template"
+EXPECTED_BRAND = "Color Picker"
 
 
 def test_brand_constant_is_the_agreed_identity():
@@ -71,26 +71,25 @@ def test_the_viewer_brand_chip_is_not_a_framework_default(client):
 
     from conftest import BROWSER_ACCEPT
 
-    page = client.get("/backends/llms.txt", accept=BROWSER_ACCEPT).text
-    # The banner is templated markup, so the brand arrives escaped — the
-    # apostrophe in "network's" becomes `&#x27;`. Comparing the raw string
-    # here would fail for a reason that has nothing to do with identity.
+    page = client.get("/examples/color-picker/llms.txt", accept=BROWSER_ACCEPT).text
+    # The banner is templated markup, so the brand arrives HTML-escaped.
+    # Comparing the raw string here would fail for a reason that has nothing
+    # to do with identity.
     assert html_module.escape(EXPECTED_BRAND) in page, (
         "the viewer banner does not name this site"
     )
 
 
-def test_the_package_name_is_in_the_description_not_the_brand():
+def test_the_author_is_in_the_description_not_the_brand():
     """Naming rules from the standard, both directions.
 
-    The brand says what the site *is*; the package name and the byline belong
-    in the description. A brand of "Pip Install Python" would make every
-    satellite in the network share one name.
+    The brand says what the site *is*; the author byline belongs in the
+    description. A brand carrying the author's handle would make the site's
+    identity and its attribution the same string, which is what makes a
+    later rename of either one silently break the other.
     """
-    assert "dash-documentation-boilerplate" in SITE_DESCRIPTION
-    assert "dash-documentation-boilerplate" not in SITE_BRAND
-    assert "Pip Install Python" in SITE_DESCRIPTION
-    assert "Pip Install Python" not in SITE_BRAND
+    assert "banana0000" in SITE_DESCRIPTION
+    assert "banana0000" not in SITE_BRAND
 
 
 def test_no_surface_falls_back_to_a_generic_title():

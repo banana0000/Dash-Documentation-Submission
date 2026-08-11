@@ -4,7 +4,7 @@
   <img src="https://cdn.2plot.ai/github_assets/dark_mode_2plot.png" alt="2plot" width="640">
 </p>
 
-> A Dash color picker with three switchable shapes — a continuous HSV wheel, clickable petals, and a ring of swatches — built on top of the [Dash Documentation Boilerplate](https://github.com/pip-install-python/Dash-Documentation-Boilerplate) template.
+> A Dash color picker with three switchable shapes — a continuous HSV wheel, clickable petals, and a ring of swatches — built on top of the [Dash Documentation Boilerplate](https://github.com/pip-install-python/Dash-Documentation-Boilerplate) template. By [banana0000](https://github.com/banana0000).
 
 [![Dash](https://img.shields.io/badge/Dash-4.4.1-blue.svg)](https://dash.plotly.com/)
 [![DMC](https://img.shields.io/badge/DMC-2.7.0-teal.svg)](https://www.dash-mantine-components.com/)

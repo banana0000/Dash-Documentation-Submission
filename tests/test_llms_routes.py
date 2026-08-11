@@ -30,9 +30,9 @@ def test_every_page_has_its_own_llms_txt(client, page_paths):
 
 
 def test_page_llms_txt_carries_the_page_prose(client):
-    body = client.get("/networks/llms.txt").text
-    assert "Multi-Site Networks" in body
-    assert "peers" in body, "page prose did not reach /<page>/llms.txt"
+    body = client.get("/examples/color-picker/llms.txt").text
+    assert "SegmentedControl" in body
+    assert "HSV wheel" in body, "page prose did not reach /<page>/llms.txt"
 
 
 def test_source_directives_are_expanded_in_llms_txt(client):
@@ -41,9 +41,9 @@ def test_source_directives_are_expanded_in_llms_txt(client):
     The audience for /<page>/llms.txt is someone pasting it into a chat
     window; a directive reference is useless to them.
     """
-    body = client.get("/networks/llms.txt").text
+    body = client.get("/examples/color-picker/llms.txt").text
     assert ".. source::" not in body, "an unexpanded directive leaked into the prose"
-    assert "def apply(app_url: str)" in body, "the referenced source file was not inlined"
+    assert "def switch_shape(shape):" in body, "the referenced source file was not inlined"
 
 
 def test_robots_txt(client):
@@ -123,7 +123,7 @@ def test_exactly_one_canonical_tag_for_browsers(client):
     the `dv-banner` chrome check below: match the markup, not the words, so a
     file may legitimately discuss what it is being checked for.
     """
-    html = re.sub(r"<!--.*?-->", "", client.get("/backends").text, flags=re.S)
+    html = re.sub(r"<!--.*?-->", "", client.get("/examples/color-picker").text, flags=re.S)
     tags = re.findall(r'<link[^>]+rel="canonical"[^>]*>', html)
     assert len(tags) == 1, f"expected exactly one canonical element, got {tags}"
 
@@ -146,9 +146,7 @@ def test_healthz(client):
 # HTML response to the next agent that asks.
 # ---------------------------------------------------------------------------
 
-# Deliberately not /networks/llms.txt: that page *documents* the viewer, so its
-# prose contains the words "dv-banner" and "mk-wordmark" legitimately.
-PAGE_DOC = "/fastapi-showcase/llms.txt"
+PAGE_DOC = "/examples/color-picker/llms.txt"
 
 # Chrome is detected as rendered markup rather than as a bare class name. A
 # Markdown document may legitimately discuss `dv-banner`; it can never contain
@@ -194,18 +192,6 @@ def test_the_banner_carries_this_app_and_network_identity(client):
     html = client.get(PAGE_DOC, accept=BROWSER_ACCEPT).text
     assert nd.NETWORK_NAME in html, "the banner does not name the network"
     assert nd.HUB_URL in html, "the banner does not link the hub"
-
-
-def test_a_page_may_document_the_viewer_without_tripping_the_check(client):
-    """/networks documents the viewer, so its prose names `dv-banner`.
-
-    That is content, not chrome. This pins the distinction so the check
-    can't be "fixed" later by making it substring-based again.
-    """
-    response = client.get("/networks/llms.txt")
-    assert "text/markdown" in response.content_type
-    assert "dv-banner" in response.text, "expected the page to discuss the class name"
-    assert not CHROME.search(response.text), "that mention must not read as chrome"
 
 
 def test_crawlers_get_markdown_not_the_viewer(client):

@@ -21,15 +21,15 @@ import os
 # is exactly what this host did before — the viewer chip read a bare "Dash".
 #
 # Naming rules, from the network standard:
-#   - the PACKAGE NAME belongs in the description, not in the brand;
-#   - "Pip Install Python" is the byline (who made it), never the site name.
-SITE_BRAND = "Dash Documentation Boilerplate — the 2plot network's template"
+#   - the AUTHOR belongs in the description, not in the brand;
+#   - the brand names the component this submission actually is, not the
+#     boilerplate template it was forked from.
+SITE_BRAND = "Color Picker"
 
 SITE_DESCRIPTION = (
-    "dash-documentation-boilerplate — the markdown-driven documentation "
-    "template every *.2plot.dev component site is forked from. Interactive "
-    "examples, Dash Mantine Components theming, and first-class AI/LLM and "
-    "SEO surfaces via dash-improve-my-llms. By Pip Install Python."
+    "A Dash color picker with three switchable shapes — a continuous HSV "
+    "wheel, clickable petals, and a ring of swatches. By banana0000, built "
+    "on the Dash Documentation Boilerplate template."
 )
 
 # Resolves {%title%} in templates/index.html, which is what the served HTML
@@ -40,8 +40,9 @@ APP_TITLE = SITE_BRAND
 
 # The brand without its tagline. SITE_BRAND is right for a page that has room
 # for it; this is for the places that prefix something else and would otherwise
-# run past every platform's truncation point.
-SITE_SHORT_NAME = "Dash Documentation Boilerplate"
+# run past every platform's truncation point. Identical to SITE_BRAND here
+# because the brand carries no tagline of its own.
+SITE_SHORT_NAME = "Color Picker"
 
 # Prefixed to every per-page title (`pages/markdown.py`, `pages/home.py`), and
 # therefore NOT only a browser-tab string: Dash passes the page title straight

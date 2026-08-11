@@ -11,17 +11,13 @@ from conftest import CRAWLER_UA, STUB_MARKER, main_body
 # Pages that must exist. A markdown file silently failing to register is
 # invisible in a smoke test that only iterates whatever did register — the
 # suite would pass with half the site missing.
+#
+# This is the trimmed color-picker submission, not the full boilerplate
+# template: the only pages that ship are the home page and the color-picker
+# docs demo.
 REQUIRED_PATHS = {
     "/",
-    "/getting-started",
-    "/backends",
-    "/backend-comparison",
-    "/fastapi-showcase",
-    "/networks",
-    "/examples/ai-integration",
-    "/examples/directives",
-    "/examples/interactive",
-    "/examples/visualization",
+    "/examples/color-picker",
 }
 
 
@@ -64,12 +60,13 @@ def test_prose_renders_as_html_not_literal_markdown(client):
     """2.1's renderer: links, code fences, rules and tables, not raw text.
 
     Before 2.1 these came through as `<p>---</p>`, literal `[text](url)` and
-    pipe characters. Checked on the directives page because it is the most
-    heavily formatted one in the repo.
+    pipe characters. Checked on the color-picker docs page because it is the
+    most heavily formatted one in this trimmed repo (two `.. source::`
+    expansions plus the prose's own code fences).
     """
-    body = main_body(client.get("/examples/directives", user_agent=CRAWLER_UA).text)
+    body = main_body(client.get("/examples/color-picker", user_agent=CRAWLER_UA).text)
 
-    assert body.count("<pre") >= 10, "expected code fences to render as <pre> blocks"
+    assert body.count("<pre") >= 5, "expected code fences to render as <pre> blocks"
     assert "<hr" in body, "expected horizontal rules to render as <hr>"
     assert not re.search(r"<p>\s*-{3,}\s*</p>", body), "horizontal rule leaked as literal text"
     assert not re.search(r"\[[^\]]+\]\(https?://", body), "markdown link leaked as literal text"
