@@ -153,36 +153,6 @@ def create_content(data):
                         ),
                     ]
                 ),
-                dmc.Divider(mt="md", mb="sm"),
-                create_nav_section(
-                    "Other Apps I've built",
-                    [
-                        create_nav_link(
-                            "mdi:cast-tutorial",
-                            "2plot.ai",
-                            "https://2plot.ai",
-                            external=True
-                        ),
-                        create_nav_link(
-                            "mdi:package-variant-closed",
-                            "2plot.dev",
-                            "https://2plot.dev",
-                            external=True
-                        ),
-                        create_nav_link(
-                            "game-icons:beehive",
-                            "ai-agent.buzz",
-                            "https://ai-agent.buzz",
-                            external=True
-                        ),
-                        create_nav_link(
-                            "arcticons:world-geography",
-                            "piratesbargain",
-                            "https://piratesbargain.com",
-                            external=True
-                        ),
-                        ]
-                )
             ],
             gap="xs",
             p="md",

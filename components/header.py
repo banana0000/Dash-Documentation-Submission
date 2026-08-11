@@ -4,6 +4,7 @@ from dash_iconify import DashIconify
 
 from components.backend_badge import create_backend_badge
 from lib.backend import get_backend_info
+from lib.constants import SITE_SHORT_NAME
 
 
 def create_link(icon, href):
@@ -104,7 +105,7 @@ def create_header(data):
                                         style={'height': '36px', 'width': '36px'}
                                     ),
                                     dmc.Text(
-                                        "Dash Docs",
+                                        SITE_SHORT_NAME,
                                         size="lg",
                                         fw=700,
                                         c="#03c7e5",
@@ -128,7 +129,7 @@ def create_header(data):
                         create_search(data),
                         create_link(
                             "radix-icons:github-logo",
-                            "https://github.com/pip-install-python/Dash-Documentation-Boilerplate",
+                            "https://github.com/banana0000/Dash-Documentation-Submission",
                         ),
                         dmc.ActionIcon(
                             [
