@@ -18,11 +18,11 @@
 One color picker, four shapes. A `dmc.SegmentedControl` switches between:
 
 - **Wheel** — a continuous HSV wheel, hover to preview and click to lock a color, like an eyedropper
-- **Flower** — two layered rings of six petals each, a lighter tint nested inside the full-saturation outer ring
+- **Flower** — two layered rings of six petals each, twelve distinct colors rather than six colors in two lightnesses
 - **Ring** — twelve preset swatches arranged in a circle
 - **Photo** — a generated, photo-like image you sample pixel by pixel
 
-All four feed the same center swatch and hex readout, and stay mounted in the DOM at once — switching shapes never destroys a picker's state.
+All four feed the same center swatch and hex readout, and stay mounted in the DOM at once — switching shapes never destroys a picker's state. The whole thing scales down and stays centered on narrow viewports (`assets/color-picker.css`) since the shapes are fixed-pixel absolute layouts that don't reflow like text.
 
 The picker ships in two places in this repo:
 
@@ -45,7 +45,7 @@ go.Image(z=_PHOTO_RGBA, customdata=_PHOTO_HEX, hoverinfo="none")
 
 Clicking either graph fires `clickData` — Python re-derives the color (a formula for the wheel, a table lookup for the photo) and *locks* it into the swatch. The marker showing the last pick is moved with `Patch()` instead of rebuilding the whole figure, so a click ships ~40 bytes back instead of re-serializing the raster.
 
-**Flower** and **Ring** are plain `html.Div`s carrying a pattern-matching id — `{"type": "picker-petal", "color": <hex>}` or `{"type": "picker-ring", "color": <hex>}` — positioned with plain arithmetic (`math.sin`/`math.cos` for the ring, CSS `rotate()` for the petals). They also carry a `data-picker-color` attribute; a second clientside callback binds native `mouseenter`/`mouseleave` listeners to preview them the same way as the wheel and photo. One server-side callback listens to all four shapes' click-style inputs at once and reads `ctx.triggered_id` to know which one fired — no `dcc.Store` needed anywhere.
+**Flower** and **Ring** are plain `html.Div`s carrying a pattern-matching id — `{"type": "picker-petal", "color": <hex>}` or `{"type": "picker-ring", "color": <hex>}` — positioned with plain arithmetic (`math.sin`/`math.cos` for the ring, CSS `rotate()` for the petals). Both pull from the same `_evenly_spaced_hues()` generator (the flower's inner layer offset by half a step from its own outer layer), so "more colors" means one palette function shared by two shapes, not two palettes to keep in sync. They also carry a `data-picker-color` attribute; a second clientside callback binds native `mouseenter`/`mouseleave` listeners to preview them the same way as the wheel and photo. One server-side callback listens to all four shapes' click-style inputs at once and reads `ctx.triggered_id` to know which one fired — no `dcc.Store` needed anywhere.
 
 See [`docs/color-picker/color-picker.md`](docs/color-picker/color-picker.md) for the full walkthrough.
 
@@ -80,6 +80,8 @@ Serves on **http://localhost:8560** — a single-file app with no dependency on 
 ```
 .
 ├── color_picker_app.py            # Standalone single-file version
+├── assets/
+│   └── color-picker.css           # Responsive scaling + centering for the docs demo
 ├── docs/
 │   └── color-picker/
 │       ├── color-picker.md        # Docs demo at /examples/color-picker

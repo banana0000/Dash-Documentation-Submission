@@ -5,7 +5,7 @@
 One color picker, four shapes. A `dmc.SegmentedControl` switches between:
 
 - **Wheel** — a continuous HSV wheel, hover to preview and click to lock a color, like an eyedropper
-- **Flower** — two layered rings of six petals each, a lighter tint nested inside the full-saturation outer ring
+- **Flower** — two layered rings of six petals each, twelve distinct colors rather than six colors in two lightnesses
 - **Ring** — twelve preset swatches arranged in a circle
 - **Photo** — a generated, photo-like image you sample pixel by pixel
 

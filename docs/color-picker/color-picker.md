@@ -14,8 +14,8 @@ icon: mdi:palette-outline
 
 One color picker, four shapes. A `dmc.SegmentedControl` filters which shape
 is visible — **Wheel** (a continuous HSV wheel), **Flower** (two layered
-rings of six petals each — a lighter tint of the same hue nested inside the
-full-saturation outer ring), **Ring** (twelve preset swatches arranged in a
+rings of six petals each, twelve distinct colors rather than six colors in
+two lightnesses), **Ring** (twelve preset swatches arranged in a
 circle), or **Photo** (a generated, photo-like image you sample pixel by
 pixel). All four feed the same center swatch and hex readout: hover any of
 them to preview a color, click to lock it in, like an eyedropper.
