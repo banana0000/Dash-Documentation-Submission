@@ -27,9 +27,10 @@ import os
 SITE_BRAND = "Color Picker"
 
 SITE_DESCRIPTION = (
-    "A Dash color picker with three switchable shapes — a continuous HSV "
-    "wheel, clickable petals, and a ring of swatches. By banana0000, built "
-    "on the Dash Documentation Boilerplate template."
+    "A Dash color picker with four switchable shapes — a continuous HSV "
+    "wheel, clickable petals, a ring of swatches, and a photo you sample "
+    "like an eyedropper. By banana0000, built on the Dash Documentation "
+    "Boilerplate template."
 )
 
 # Resolves {%title%} in templates/index.html, which is what the served HTML

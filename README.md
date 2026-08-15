@@ -4,7 +4,7 @@
   <img src="https://cdn.2plot.ai/github_assets/dark_mode_2plot.png" alt="2plot" width="640">
 </p>
 
-> A Dash color picker with three switchable shapes — a continuous HSV wheel, clickable petals, and a ring of swatches — built on top of the [Dash Documentation Boilerplate](https://github.com/pip-install-python/Dash-Documentation-Boilerplate) template. By [banana0000](https://github.com/banana0000).
+> A Dash color picker with four switchable shapes — a continuous HSV wheel, clickable petals, a ring of swatches, and a photo you sample like an eyedropper — built on top of the [Dash Documentation Boilerplate](https://github.com/pip-install-python/Dash-Documentation-Boilerplate) template. By [banana0000](https://github.com/banana0000).
 
 [![Dash](https://img.shields.io/badge/Dash-4.4.1-blue.svg)](https://dash.plotly.com/)
 [![DMC](https://img.shields.io/badge/DMC-2.7.0-teal.svg)](https://www.dash-mantine-components.com/)
@@ -15,13 +15,14 @@
 
 ## What this is
 
-One color picker, three shapes. A `dmc.SegmentedControl` switches between:
+One color picker, four shapes. A `dmc.SegmentedControl` switches between:
 
-- **Wheel** — a continuous HSV wheel you sample by clicking anywhere on it, like an eyedropper
-- **Flower** — six clickable preset petals
+- **Wheel** — a continuous HSV wheel, hover to preview and click to lock a color, like an eyedropper
+- **Flower** — two layered rings of six petals each, a lighter tint nested inside the full-saturation outer ring
 - **Ring** — twelve preset swatches arranged in a circle
+- **Photo** — a generated, photo-like image you sample pixel by pixel
 
-All three feed the same center swatch and hex readout, and stay mounted in the DOM at once — switching shapes never destroys a picker's state.
+All four feed the same center swatch and hex readout, and stay mounted in the DOM at once — switching shapes never destroys a picker's state.
 
 The picker ships in two places in this repo:
 
@@ -34,19 +35,17 @@ The picker ships in two places in this repo:
 
 ## How it works
 
-**Wheel** is a `dcc.Graph` showing a static HSV raster (hue by angle, saturation by radius, value fixed at 1) built once at import time with `colorsys.hsv_to_rgb`. Each pixel carries its hex string as `customdata`, so Plotly's native hover box shows the exact color under the pointer:
+Every shape separates **preview** (hover, entirely client-side) from **lock-in** (click, resolved server-side), so the two never fight over the same `Output`.
+
+**Wheel** is a `dcc.Graph` showing a static HSV raster (hue by angle, saturation by radius, value fixed at 1) built once at import time with `colorsys.hsv_to_rgb`. Plotly's native hover tooltip is off (`hoverinfo="none"`) — a clientside callback reads `hoverData`, redoes the hue/saturation math in JavaScript, and paints a semi-transparent preview overlay on the center swatch. **Photo** is a generated raster with no such formula, so it ships its real per-pixel hex as `customdata` instead, and the same clientside callback reads that directly when the photo is what's being hovered:
 
 ```python
-go.Image(
-    z=_WHEEL_RGBA,
-    customdata=_WHEEL_HEX,
-    hovertemplate="%{customdata}<extra></extra>",
-)
+go.Image(z=_PHOTO_RGBA, customdata=_PHOTO_HEX, hoverinfo="none")
 ```
 
-Clicking the wheel fires `clickData`, which carries the exact pixel clicked — that pixel is run back through the same hue/saturation math to recover the color, and a small ring marker is drawn at that spot so the pick stays visible.
+Clicking either graph fires `clickData` — Python re-derives the color (a formula for the wheel, a table lookup for the photo) and *locks* it into the swatch. The marker showing the last pick is moved with `Patch()` instead of rebuilding the whole figure, so a click ships ~40 bytes back instead of re-serializing the raster.
 
-**Flower** and **Ring** are plain `html.Div`s carrying a pattern-matching id — `{"type": "picker-petal", "color": <hex>}` or `{"type": "picker-ring", "color": <hex>}` — positioned with plain arithmetic (`math.sin`/`math.cos` for the ring, CSS `rotate()` for the petals). One callback listens to all three shapes' inputs at once and reads `ctx.triggered_id` to know which one fired — no `dcc.Store` needed anywhere.
+**Flower** and **Ring** are plain `html.Div`s carrying a pattern-matching id — `{"type": "picker-petal", "color": <hex>}` or `{"type": "picker-ring", "color": <hex>}` — positioned with plain arithmetic (`math.sin`/`math.cos` for the ring, CSS `rotate()` for the petals). They also carry a `data-picker-color` attribute; a second clientside callback binds native `mouseenter`/`mouseleave` listeners to preview them the same way as the wheel and photo. One server-side callback listens to all four shapes' click-style inputs at once and reads `ctx.triggered_id` to know which one fired — no `dcc.Store` needed anywhere.
 
 See [`docs/color-picker/color-picker.md`](docs/color-picker/color-picker.md) for the full walkthrough.
 

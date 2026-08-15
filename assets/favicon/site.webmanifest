@@ -1,7 +1,7 @@
 {
   "name": "Color Picker",
   "short_name": "Color Picker",
-  "description": "A Dash color picker with three switchable shapes: a wheel, a flower and a ring.",
+  "description": "A Dash color picker with four switchable shapes: a wheel, a flower, a ring, and a photo.",
   "icons": [
     { "src": "/assets/favicon/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/assets/favicon/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
