@@ -305,6 +305,17 @@ _WHEEL_BOX_STYLE = {
     "display": "inline-block",
 }
 
+# No card, no background — the square figure is clipped to a circle by CSS,
+# so the corners (whatever color they are) are never drawn at all instead of
+# relying on go.Image to composite alpha=0 against paper_bgcolor, which it
+# doesn't: those pixels rendered opaque black regardless of alpha.
+_WHEEL_WRAP_STYLE = {
+    "borderRadius": "50%",
+    "overflow": "hidden",
+    "display": "inline-block",
+    "lineHeight": 0,
+}
+
 _wheel_graph = dcc.Graph(
     id="picker-demo-wheel",
     figure=_wheel_figure(),
@@ -315,7 +326,7 @@ _wheel_graph = dcc.Graph(
     # shapes signal "clickable" the same way.
     style={"width": _WHEEL_SIZE, "height": _WHEEL_SIZE, "cursor": "pointer"},
 )
-_wheel = html.Div(_wheel_graph, style=_WHEEL_BOX_STYLE)
+_wheel = html.Div(_wheel_graph, style=_WHEEL_WRAP_STYLE)
 _photo_graph = dcc.Graph(
     id="picker-demo-photo",
     figure=_photo_figure(),
