@@ -2,7 +2,7 @@ from pathlib import Path
 
 import frontmatter
 import dash_mantine_components as dmc
-from dash import dcc, register_page
+from dash import Input, Output, callback, dcc, no_update, register_page
 
 from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX, SITE_DESCRIPTION
 
@@ -46,3 +46,23 @@ layout = dmc.Container(
         )
     ]
 )
+
+
+# A human landing on "/" gets bounced straight to the actual demo — this
+# site has exactly one thing to show. Agents are unaffected: /llms.txt is a
+# plain HTTP route, not part of the client-side router this callback lives
+# in, so it still serves LLMS_DOC (this page's prose plus the site index)
+# regardless of where a browser ends up.
+#
+# `prevent_initial_call=False` is required — the app sets
+# `prevent_initial_callbacks=True` globally, and the very first load of "/"
+# IS the case this callback exists for.
+@callback(
+    Output("url", "pathname"),
+    Input("url", "pathname"),
+    prevent_initial_call=False,
+)
+def _redirect_home_to_picker(pathname):
+    if pathname == "/":
+        return "/examples/color-picker"
+    return no_update
