@@ -1,0 +1,25 @@
+/* Color picker demo: the wheel/flower/ring/photo shapes are absolutely
+   positioned at fixed pixel sizes (Plotly graphs + hand-placed petals and
+   swatches), so they don't reflow like text. `zoom` scales the whole
+   picker — including its layout footprint, unlike `transform: scale()`,
+   which would leave empty space behind it — down at narrower viewports
+   instead of letting it overflow or get clipped by the page. */
+.picker-responsive {
+    /* block + fit-content + auto margins centers it regardless of whatever
+       text-align the surrounding page prose uses */
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+@media (max-width: 480px) {
+    .picker-responsive {
+        zoom: 0.62;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 700px) {
+    .picker-responsive {
+        zoom: 0.8;
+    }
+}

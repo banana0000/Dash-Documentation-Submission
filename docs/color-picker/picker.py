@@ -19,7 +19,7 @@ import plotly.graph_objects as go
 
 _DEFAULT_COLOR = "#f03e3e"
 
-_CENTER_SIZE = 70
+_CENTER_SIZE = 88
 _CENTER_BASE_STYLE = {
     # position:relative anchors the hover-preview overlay
     "position": "relative",
@@ -44,7 +44,7 @@ _PREVIEW_BASE_STYLE = {
 _PREVIEW_OPACITY = 0.55
 _PREVIEW_STYLE_JS = json.dumps(_PREVIEW_BASE_STYLE)
 
-_WHEEL_SIZE = 220
+_WHEEL_SIZE = 260
 
 
 def _hue_sat_from_pixel(x, y, size=_WHEEL_SIZE):
@@ -123,7 +123,7 @@ def _wheel_figure():
 # actual pixel table instead of computing hue/saturation).
 # ---------------------------------------------------------------------------
 
-_PHOTO_SIZE = 180
+_PHOTO_SIZE = 210
 
 
 def _build_photo_rgba(size=_PHOTO_SIZE):
@@ -196,26 +196,33 @@ def _photo_figure():
     return fig
 
 
+def _evenly_spaced_hues(count, phase=0.0):
+    """`count` full-saturation colors spaced evenly around the hue wheel —
+    shared by the flower's inner layer and the ring, so "more colors" means
+    one generator, not two palettes to keep in sync. `phase` (0-1) rotates
+    the whole wheel, so a second call can land on hues the first one skipped
+    instead of reproducing them."""
+    return [
+        "#{:02x}{:02x}{:02x}".format(
+            *(round(c * 255) for c in colorsys.hsv_to_rgb((i / count + phase) % 1.0, 1.0, 1.0))
+        )
+        for i in range(count)
+    ]
+
+
 _PETAL_OUTER_COLORS = ["#f03e3e", "#fab005", "#40c057", "#228be6", "#7950f2", "#e64980"]
-_PETAL_OUTER_WIDTH = 52
-_PETAL_OUTER_HEIGHT = 92
-_PETAL_INNER_WIDTH = 34
-_PETAL_INNER_HEIGHT = 58
-_FLOWER_SIZE = 200
+_PETAL_OUTER_WIDTH = 62
+_PETAL_OUTER_HEIGHT = 110
+_PETAL_INNER_WIDTH = 40
+_PETAL_INNER_HEIGHT = 70
+_FLOWER_SIZE = 240
 
-
-def _tint(hex_color, saturation_scale=0.45):
-    """A lighter version of `hex_color`, same hue, so the inner layer reads
-    as "the same flower, closer to the center" rather than a clashing set."""
-    r, g, b = (int(hex_color[i:i + 2], 16) / 255 for i in (1, 3, 5))
-    h, s, _v = colorsys.rgb_to_hsv(r, g, b)
-    r2, g2, b2 = colorsys.hsv_to_rgb(h, s * saturation_scale, 1.0)
-    return "#{:02x}{:02x}{:02x}".format(round(r2 * 255), round(g2 * 255), round(b2 * 255))
-
-
+# A second, independent set of hues rather than tints of the outer six — the
+# flower reads as twelve distinct colors instead of six colors in two
+# lightnesses. phase=1/12 lands exactly between the outer ring's hue steps.
+_PETAL_INNER_COLORS = _evenly_spaced_hues(6, phase=1 / 12)
 # Offset by half a step from the outer ring so the two layers interleave
 # instead of one hiding directly behind the other.
-_PETAL_INNER_COLORS = [_tint(c) for c in _PETAL_OUTER_COLORS]
 _PETAL_INNER_OFFSET = 180 / len(_PETAL_OUTER_COLORS)
 
 
@@ -252,16 +259,13 @@ def _petal_layer(colors, width, height, offset=0):
 
 
 _RING_COUNT = 12
-_RING_SIZE = 220
-_RING_RADIUS = 90
-_SWATCH_SIZE = 34
+_RING_SIZE = 260
+_RING_RADIUS = 108
+_SWATCH_SIZE = 40
 
 
 def _ring_colors(count=_RING_COUNT):
-    return [
-        "#{:02x}{:02x}{:02x}".format(*(round(c * 255) for c in colorsys.hsv_to_rgb(i / count, 1.0, 1.0)))
-        for i in range(count)
-    ]
+    return _evenly_spaced_hues(count)
 
 
 def _ring_swatch(color, angle_deg):
@@ -347,7 +351,7 @@ _ring = html.Div(
     style={"position": "relative", "width": _RING_SIZE, "height": _RING_SIZE},
 )
 
-component = dmc.Stack(
+_picker_stack = dmc.Stack(
     gap="lg",
     align="center",
     children=[
@@ -373,6 +377,12 @@ component = dmc.Stack(
         html.Div(id="picker-demo-bind-sink", style={"display": "none"}),
     ],
 )
+
+# assets/color-picker.css shrinks this whole assembly at narrow viewports —
+# the shapes are fixed-pixel absolute layouts (Plotly graphs, hand-placed
+# petals/swatches), so they don't reflow like text and need to be scaled as
+# one unit instead.
+component = html.Div(_picker_stack, className="picker-responsive")
 
 
 @callback(
