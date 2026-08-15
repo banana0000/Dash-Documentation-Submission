@@ -13,16 +13,16 @@ icon: mdi:palette-outline
 ### Introduction
 
 One color picker, three shapes. A `dmc.SegmentedControl` filters which shape
-is visible — **Wheel** (a continuous HSV wheel you sample by clicking
-anywhere on it, like an eyedropper), **Flower** (six clickable preset
+is visible — **Wheel** (a continuous HSV wheel), **Flower** (six preset
 petals), or **Ring** (twelve preset swatches arranged in a circle). All
-three feed the same center swatch and hex readout.
+three feed the same center swatch and hex readout: hover any of them to
+preview a color, click to lock it in, like an eyedropper.
 
 ---
 
 ### Live Demo
 
-Switch shapes with the control at the top, then click to pick a color:
+Switch shapes with the control at the top; hover to preview, click to lock a color:
 
 .. exec::docs.color-picker.picker
     :code: false
@@ -34,47 +34,67 @@ Source code:
 
 ### How It Works
 
+Every shape now separates **preview** (hover, runs entirely client-side)
+from **lock-in** (click, resolved server-side) into two different outputs,
+so the two never fight over the same prop.
+
 **Wheel** is a `dcc.Graph` showing a static HSV raster (hue by angle,
 saturation by radius, value fixed at 1) built once at import time with
 `colorsys.hsv_to_rgb`, sitting on an explicit white card (`backgroundColor:
-"white"`) so it reads the same regardless of light/dark theme. Each pixel
-also carries its hex string as `customdata`, so Plotly's own hover box shows
-the exact color under the pointer via a `hovertemplate` — a `dmc.Tooltip`
-wrapper was tried here first, but its pointer-tracking overlay intercepted
-clicks before they reached the graph, so the hover box stays native to
-Plotly instead:
+"white"`) so it reads the same regardless of light/dark theme. Plotly's own
+hover tooltip is turned off (`hoverinfo="none"`) — it still fires
+`hoverData` on every pixel, but nothing is rendered by Plotly itself. A
+clientside callback reads `hoverData`, redoes the hue/saturation-from-pixel
+math in JavaScript, and writes the resulting hex straight into a
+semi-transparent overlay `Div` stacked on top of the center swatch — a
+server round trip on every mouse-move would be unusable:
 
 ```python
-go.Image(
-    z=_WHEEL_RGBA,
-    customdata=_WHEEL_HEX,
-    hovertemplate="%{customdata}<extra></extra>",
+clientside_callback(
+    """
+    function(hoverData) {
+        // ... same polar hue/saturation math as _hue_sat_from_pixel, in JS
+        return [
+            Object.assign({}, base, {opacity: 0.55, backgroundColor: hex}),
+            hex
+        ];
+    }
+    """,
+    Output("picker-demo-preview", "style"),
+    Output("picker-demo-hover-hex", "children"),
+    Input("picker-demo-wheel", "hoverData"),
 )
 ```
 
-Clicking the wheel fires `clickData`, which carries the exact pixel the
-user clicked — that pixel is run back through the same hue/saturation math
-to recover the color, and a small ring marker (a `go.Scatter` point) is
-drawn at that spot so the pick stays visible:
+Clicking the wheel fires `clickData`, which carries the exact pixel the user
+clicked — Python re-derives the color from that pixel and the callback
+*locks* it into the swatch underneath the preview overlay. The marker trace
+that shows where the last pick landed is moved with `Patch()` instead of
+rebuilding the whole figure, so a click ships roughly 40 bytes back to the
+browser instead of re-serializing the entire raster:
 
 ```python
 @callback(
-    Output("picker-center", "style"),
-    Output("picker-hex", "children"),
-    Output("picker-wheel", "figure"),
-    Input("picker-wheel", "clickData"),
-    Input({"type": "picker-petal", "color": ALL}, "n_clicks"),
-    Input({"type": "picker-ring", "color": ALL}, "n_clicks"),
+    Output("picker-demo-center", "style"),
+    Output("picker-demo-hex", "children"),
+    Output("picker-demo-wheel", "figure"),
+    Input("picker-demo-wheel", "clickData"),
+    Input({"type": "picker-demo-petal", "color": ALL}, "n_clicks"),
+    Input({"type": "picker-demo-ring", "color": ALL}, "n_clicks"),
 )
 def pick_color(click_data, _petal_clicks, _ring_clicks):
     triggered = ctx.triggered_id
     figure = no_update
-    if triggered == "picker-wheel" and click_data:
+    if triggered == "picker-demo-wheel" and click_data:
         point = click_data["points"][0]
         x, y = point["x"], point["y"]
         hex_color = _hex_from_pixel(x, y)
-        figure = _wheel_figure((x, y))
-    elif isinstance(triggered, dict) and triggered.get("type") in ("picker-petal", "picker-ring"):
+        figure = Patch()
+        figure["data"][1]["x"] = [x]
+        figure["data"][1]["y"] = [y]
+    elif isinstance(triggered, dict) and triggered.get("type") in (
+        "picker-demo-petal", "picker-demo-ring"
+    ):
         hex_color = triggered["color"]
     else:
         hex_color = _DEFAULT_COLOR
@@ -82,13 +102,21 @@ def pick_color(click_data, _petal_clicks, _ring_clicks):
 ```
 
 **Flower** and **Ring** are plain `html.Div`s carrying a pattern-matching id
-— `{"type": "picker-petal", "color": <hex>}` or `{"type": "picker-ring",
-"color": <hex>}` — positioned with plain arithmetic (`math.sin`/`math.cos`
-for the ring, CSS `rotate()` for the petals). The same callback above
-listens to all three shapes' inputs at once and reads `ctx.triggered_id` to
-know which one fired — no `dcc.Store` needed anywhere.
+— `{"type": "picker-demo-petal", "color": <hex>}` or `{"type":
+"picker-demo-ring", "color": <hex>}` — positioned with plain arithmetic
+(`math.sin`/`math.cos` for the ring, CSS `rotate()` for the petals). The
+click callback above listens to all three shapes' click-style inputs at once
+and reads `ctx.triggered_id` to know which one fired — no `dcc.Store`
+needed anywhere.
 
-All three shapes stay mounted in the DOM at all times; a second, smaller
+They also each carry a `data-picker-color` attribute rather than a hover
+prop (`html.Div` has none). A second clientside callback — fired once per
+shape switch — binds native `mouseenter`/`mouseleave` listeners to every
+`[data-picker-color]` element still on the page and pushes straight into the
+same two preview outputs with `window.dash_clientside.set_props`, so hovering
+a petal or a ring swatch previews it exactly like hovering the wheel.
+
+All three shapes stay mounted in the DOM at all times; a third, smaller
 callback just toggles which one is `display: block` based on the
 `SegmentedControl`'s value, so switching shapes never destroys or re-creates
 a picker's state.
