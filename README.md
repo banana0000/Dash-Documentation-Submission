@@ -96,7 +96,16 @@ This repo is forked from the [Dash Documentation Boilerplate](https://github.com
 
 ## Also in this repo
 
-`excalidraw_app.py` — unrelated to the color picker, a separate standalone Dash app (own `Dash(__name__)` instance, port 8060) built on [`dash-excalidraw`](https://github.com/pip-install-python/dash-excalidraw). Generates a KPI-dashboard mockup (cards, donuts, charts, a flowchart) on a 1920×1080 Excalidraw canvas meant to be exported as a Power BI report background, with the same templates available to drag out of Excalidraw's own Library sidebar. See the module docstring for install/export details:
+An Excalidraw KPI-dashboard mockup tool — unrelated to the color picker, built on [`dash-excalidraw`](https://github.com/pip-install-python/dash-excalidraw). A 1920×1080 canvas (starting with one worked flowchart example) meant to be exported as a Power BI report background, with KPI cards/donuts/charts/gradient swatches available to drag out of Excalidraw's own Library sidebar. Listed under **Apps** in the site's nav (opens in a new tab) at `/excalidraw`.
+
+The template-building logic lives in `components/excalidraw_kpi.py`, shared by two entry points:
+
+| Where | Notes |
+|---|---|
+| `pages/excalidraw.py` | Embedded page on the main site at `/excalidraw` |
+| `excalidraw_app.py` | Fully independent standalone app, own `Dash(__name__)` instance, port 8060 |
+
+The main site installs `dash-excalidraw` from `requirements.txt` (the GitHub build, not the older PyPI release — see `components/excalidraw_kpi.py`'s module docstring for why). To run the standalone version on its own:
 
 ```bash
 pip install "git+https://github.com/pip-install-python/dash-excalidraw.git"

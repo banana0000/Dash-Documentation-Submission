@@ -108,6 +108,11 @@ dash-improve-my-llms[flask]>=2.3.4
 # dash-improve-my-llms[quart]>=2.3.4     # Dash 4.4+ Quart backend
 # dash-improve-my-llms[all]>=2.3.4       # all three
 
+# The /excalidraw page (components/excalidraw_kpi.py, pages/excalidraw.py,
+# and the standalone excalidraw_app.py). The GitHub build, not PyPI's 0.0.4 --
+# see components/excalidraw_kpi.py's module docstring for the difference.
+dash-excalidraw @ git+https://github.com/pip-install-python/dash-excalidraw.git
+
 # Production Servers
 # - gunicorn   -> WSGI (Flask)
 # - uvicorn    -> ASGI (FastAPI / Quart)

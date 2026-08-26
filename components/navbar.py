@@ -12,6 +12,12 @@ excluded_links = [
     "/learning-resources",
 ]
 
+# Pages that are tools/demos rather than documentation — listed under their
+# own "Apps" section instead of getting lumped in with "Documentation".
+apps_paths = [
+    "/excalidraw",
+]
+
 
 def create_nav_link(icon, text, href, external=False):
     """Create a styled navigation link with icon"""
@@ -66,16 +72,25 @@ def create_content(data):
         "Data Visualization",
     ]
 
-    # Create a mapping of page names to their links
+    # Create a mapping of page names to their links, splitting out apps_paths
+    # into their own bucket before docs pages get ordered below. Apps open in
+    # a new tab (external=True) -- they're full-screen tools meant to stand
+    # on their own page, not a docs page you navigate back and forth from.
     page_dict = {}
+    apps_links = []
     for entry in data:
         if entry["path"] not in excluded_links and entry["path"] != "/":
+            is_app = entry["path"] in apps_paths
             link = create_nav_link(
                 entry.get("icon", "fluent:document-24-regular"),
                 entry["name"],
-                entry["path"]
+                entry["path"],
+                external=is_app,
             )
-            page_dict[entry["name"]] = link
+            if is_app:
+                apps_links.append(link)
+            else:
+                page_dict[entry["name"]] = link
 
     # Order the links according to page_order
     page_links = []
@@ -106,6 +121,14 @@ def create_content(data):
                 create_nav_section(
                     "Documentation",
                     page_links
+                ),
+
+                # Apps Section — tools/demos (e.g. the Excalidraw mockup)
+                # that aren't documentation, kept separate from the list above.
+                dmc.Divider(mt="md", mb="sm"),
+                create_nav_section(
+                    "Apps",
+                    apps_links
                 ),
 
                 # Pip Components Section — sits between the docs and the

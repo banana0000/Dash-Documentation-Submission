@@ -13,11 +13,12 @@ from conftest import CRAWLER_UA, STUB_MARKER, main_body
 # suite would pass with half the site missing.
 #
 # This is the trimmed color-picker submission, not the full boilerplate
-# template: the only pages that ship are the home page and the color-picker
-# docs demo.
+# template: the only pages that ship are the home page, the color-picker
+# docs demo, and the Excalidraw KPI mockup.
 REQUIRED_PATHS = {
     "/",
     "/examples/color-picker",
+    "/excalidraw",
 }
 
 
