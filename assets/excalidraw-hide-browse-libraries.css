@@ -1,0 +1,7 @@
+/* excalidraw_demo.py: hide the "Browse libraries" link at the bottom of the
+   Library sidebar (it opens libraries.excalidraw.com, not used here). No
+   Dash prop exists for this, so it's done in CSS, scoped to #excalidraw so
+   other dash demos sharing this assets folder are unaffected. */
+#excalidraw .library-menu-browse-button {
+    display: none !important;
+}

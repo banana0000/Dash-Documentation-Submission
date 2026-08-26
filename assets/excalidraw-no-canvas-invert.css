@@ -1,0 +1,11 @@
+/* app.py: theme="dark" is kept for its UI chrome (toolbar/panels/buttons).
+   Excalidraw's dark theme also CSS-inverts the canvas itself
+   (--theme-filter: invert(93%) hue-rotate(180deg)), on the assumption
+   colours were authored for a light background -- but every colour in this
+   app (ARTBOARD_COLOR, DESK_COLOR, the KPI/flowchart accents) is already
+   hand-authored dark, so that invert was flipping the canvas back to light
+   on screen. Killing just this variable leaves the rest of the dark theme
+   (chrome colours, panel backgrounds, icons) untouched. */
+#excalidraw .excalidraw.theme--dark {
+    --theme-filter: none !important;
+}
