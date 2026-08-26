@@ -418,24 +418,32 @@ def bind_flowchart_arrows(elements):
     return elements
 
 
-def flowchart_sample(origin_x, origin_y, opacity):
+def flowchart_sample(origin_x, origin_y, opacity, scale=0.7):
     """A small branching flowchart drawn directly on the canvas: start, a
     process step, a decision, a Yes branch ending in a success node, and a
     No branch ending in an error node -- built from the same _shape/_text
-    primitives as the KPI templates, connected with arrows."""
+    primitives as the KPI templates, connected with arrows.
+
+    Every position/size below is one set of numbers times `scale`, so a
+    smaller flowchart is one argument, not twenty re-tuned coordinates --
+    the connectors stay correctly attached regardless, since they're all
+    computed from the node tuples via cx_of(), never hardcoded separately."""
     seed = 15000
     elements = []
 
-    cx = origin_x + 380  # trunk column (start / step 1 / decision / No branch)
-    bx = cx + 220         # Yes-branch column
+    def s(n):
+        return round(n * scale)
 
-    start = (cx - 80, origin_y, 160, 64)
-    step1 = (cx - 110, origin_y + 130, 220, 72)
-    decision = (cx - 100, origin_y + 270, 200, 120)
-    step_yes = (bx, origin_y + 294, 200, 72)
-    done = (bx + 60, origin_y + 390, 160, 64)
-    step_no = (cx - 110, origin_y + 430, 220, 72)
-    error = (cx - 80, origin_y + 542, 160, 64)
+    cx = origin_x + s(380)  # trunk column (start / step 1 / decision / No branch)
+    bx = cx + s(220)         # Yes-branch column
+
+    start = (cx - s(80), origin_y, s(160), s(64))
+    step1 = (cx - s(110), origin_y + s(130), s(220), s(72))
+    decision = (cx - s(100), origin_y + s(270), s(200), s(120))
+    step_yes = (bx, origin_y + s(294), s(200), s(72))
+    done = (bx + s(60), origin_y + s(390), s(160), s(64))
+    step_no = (cx - s(110), origin_y + s(430), s(220), s(72))
+    error = (cx - s(80), origin_y + s(542), s(160), s(64))
 
     def cx_of(node):
         x, y, w, h = node
@@ -469,7 +477,7 @@ def flowchart_sample(origin_x, origin_y, opacity):
     )
     elements += _connector(
         "flow-arrow-yes", [(d_right_x, d_right_y), (y_left_x, y_left_y)],
-        "#10b981", opacity, seed + 120, "Yes", (d_right_x + 20, d_right_y - 22),
+        "#10b981", opacity, seed + 120, "Yes", (d_right_x + s(20), d_right_y - s(22)),
         start_id="flow-decision", end_id="flow-step-yes",
     )
     elements += _connector(
@@ -478,7 +486,7 @@ def flowchart_sample(origin_x, origin_y, opacity):
     )
     elements += _connector(
         "flow-arrow-no", [(sx, d_bot), (nx, n_top)], "#ef4444", opacity, seed + 140,
-        "No", (sx + 12, d_bot + 10), start_id="flow-decision", end_id="flow-step-no",
+        "No", (sx + s(12), d_bot + s(10)), start_id="flow-decision", end_id="flow-step-no",
     )
     elements += _connector(
         "flow-arrow-error", [(nx, n_bot), (ex, e_top)], "#475569", opacity, seed + 150,
@@ -567,11 +575,14 @@ def build_library_items(opacity):
 
 
 def build_canvas_elements(opacity):
-    """The Full HD artboard, plus the flowchart sample -- one worked example
-    on an otherwise blank background, rather than the full KPI dashboard.
-    The KPI templates themselves live in the Personal Library instead of
-    being pre-placed on the canvas; drag one out when it's actually wanted."""
-    return artboard_frame(opacity) + flowchart_sample(100, 100, opacity)
+    """Just the flowchart sample -- one small worked example, floating on the
+    desk with no artboard rectangle behind it. The canvas pans freely, so a
+    fixed background isn't earning its keep here the way it does for the
+    Power-BI-export use case (artboard_frame is still there to compose in by
+    hand, e.g. from the Library, whenever that's actually needed). The KPI
+    templates themselves live in the Personal Library instead of being
+    pre-placed on the canvas; drag one out when it's actually wanted."""
+    return flowchart_sample(100, 100, opacity)
 
 
 def build_excalidraw_with_elements(component_id, elements, opacity, height="85vh"):

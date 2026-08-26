@@ -31,8 +31,8 @@ register_page(
 
 DOC_TEXT = (
     "The canvas opens with a 1920x1080 artboard (Full HD, the 16:9 Power BI "
-    "page size) pre-populated with a sample KPI dashboard. The same KPI "
-    "cards, round badges, gradient cards, chart panels, progress bars, "
+    "page size) and one worked flowchart example. The KPI cards, round "
+    "badges, gradient cards, chart panels, progress bars, "
     "donuts and gradient swatches also sit in Excalidraw's own Personal "
     "Library (the Library button, top right) — drag one onto the canvas "
     "as many times as needed. To export the background: menu → Export "
@@ -62,20 +62,6 @@ LLMS_DOC = (
     )
 )
 
-_code_tabs = dmc.CodeHighlightTabs(
-    code=[
-        {
-            "fileName": Path(path).name,
-            "code": _CODE_SOURCE[path],
-            "language": language,
-            "icon": DashIconify(icon=icon),
-        }
-        for path, language, icon in _CODE_FILES
-    ],
-    defaultExpanded=False,
-    withExpandButton=True,
-)
-
 _copy_button = dmc.Tooltip(
     dmc.Button(
         dmc.Group(
@@ -94,10 +80,10 @@ _copy_button = dmc.Tooltip(
     withArrow=True,
 )
 
-# Canvas first, full-bleed, right under a slim title bar -- a drawing tool
-# earns the viewport, not the page chrome around it. Everything explanatory
-# (description, copy button, source) sits below the fold instead of pushing
-# the canvas down.
+# Canvas full-bleed under a slim title bar -- a drawing tool earns the
+# viewport, not page chrome. No description/source section below it; that
+# prose still exists (DOC_TEXT, the embedded source) but only for
+# /excalidraw/llms.txt, not the on-page UI.
 _title_row = dmc.Group(
     justify="space-between",
     align="center",
@@ -117,17 +103,6 @@ layout = dmc.Box(
         html.Div(
             build_excalidraw("excalidraw", DEFAULT_OPACITY, height=_CANVAS_HEIGHT),
             id="excalidraw-container",
-        ),
-        dmc.Container(
-            fluid=True,
-            py="xl",
-            children=[
-                dmc.Text(DESCRIPTION, className="m2d-paragraph"),
-                dmc.Divider(my="xl"),
-                dmc.Title("How it works", order=4),
-                dmc.Text(DOC_TEXT, className="m2d-paragraph", mb="md"),
-                _code_tabs,
-            ],
         ),
     ],
 )
