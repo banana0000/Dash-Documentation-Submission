@@ -96,7 +96,13 @@ This repo is forked from the [Dash Documentation Boilerplate](https://github.com
 
 ## Also in this repo
 
-An Excalidraw KPI-dashboard mockup tool — unrelated to the color picker, built on [`dash-excalidraw`](https://github.com/pip-install-python/dash-excalidraw). A 1920×1080 canvas (starting with one worked flowchart example) meant to be exported as a Power BI report background, with KPI cards/donuts/charts/gradient swatches available to drag out of Excalidraw's own Library sidebar. Listed under **Apps** in the site's nav (opens in a new tab) at `/excalidraw`.
+An Excalidraw canvas tool — unrelated to the color picker, built on [`dash-excalidraw`](https://github.com/pip-install-python/dash-excalidraw). Listed under **Apps** in the site's nav (opens in a new tab) at `/excalidraw`.
+
+- Opens with one worked flowchart example — faint (half-opacity) node fills, labels set in Excalidraw's own hand-drawn font — floating directly on the desk, no artboard rectangle behind it
+- KPI cards/donuts/charts/gradient swatches, plus a small hand-drawn scene (sun, mountains, a tree, a couple of birds), all sit in Excalidraw's own Library sidebar to drag out as needed
+- "Reset the canvas" and "Save to.../Export image..." are enabled in Excalidraw's own hamburger menu — real clear/save actions, not custom-built ones
+- The Help dialog's keyboard-shortcut pills are styled yellow-on-black (`assets/excalidraw-help-buttons.css`)
+- The 1920×1080 artboard used for the Power-BI-report-background workflow (see the module docstring for the export steps) is still available — via `artboard_frame()` — just not placed on the canvas by default any more
 
 The template-building logic lives in `components/excalidraw_kpi.py`, shared by two entry points:
 
