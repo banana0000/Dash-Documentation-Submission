@@ -46,6 +46,8 @@ the GitHub build:
 
     pip install "git+https://github.com/pip-install-python/dash-excalidraw.git"
 """
+import math
+
 from dash_excalidraw import DashExcalidraw
 
 DEFAULT_BORDER_RADIUS = 10
@@ -171,11 +173,15 @@ def _shape(shape_id, group_id, shape_type, x, y, width, height, stroke, backgrou
     return element
 
 
-def _text(text_id, group_id, x, y, width, height, font_size, color, content, opacity, seed, align="left"):
+def _text(text_id, group_id, x, y, width, height, font_size, color, content, opacity, seed, align="left",
+          font_family=2):
+    # fontFamily: 1 = hand-drawn (Virgil/Excalifont), 2 = normal (Helvetica),
+    # 3 = code (Cascadia). 2 stays the default for the KPI templates' clean
+    # dashboard-card look; the flowchart's _node passes 1 for "kézzel írott".
     return _shape(text_id, group_id, "text", x, y, width, height, color, "transparent", opacity, seed,
                   fill_style="hachure", stroke_width=1, extra={
                       "fontSize": font_size,
-                      "fontFamily": 2,
+                      "fontFamily": font_family,
                       "text": content,
                       "baseline": 0,
                       "lineHeight": 1.2,
@@ -349,14 +355,17 @@ def _node(node_id, shape_type, x, y, w, h, fill, label, opacity, seed):
     """A flowchart node: a filled shape (rectangle/diamond/ellipse) with its
     label centred on top. Its own group, separate from every other node --
     so a single click in the app selects just this box, not the whole
-    diagram."""
+    diagram. The fill is faint (half the requested opacity) and the label
+    uses Excalidraw's hand-drawn font -- "kézzel írott": the box reads as
+    pencilled in, not printed."""
     group_id = f"{node_id}-group"
+    faint = max(1, round(opacity * 0.5))
     return [
-        _shape(node_id, group_id, shape_type, x, y, w, h, "#000000", fill, opacity, seed,
+        _shape(node_id, group_id, shape_type, x, y, w, h, "#000000", fill, faint, seed,
                roughness=0, stroke_width=1.5,
                roundness={"type": 3, "value": 12} if shape_type == "rectangle" else None),
-        _text(f"{node_id}-label", group_id, x, y + h / 2 - 12, w, 24, 17, "#f8fafc", label,
-              opacity, seed + 1, align="center"),
+        _text(f"{node_id}-label", group_id, x, y + h / 2 - 12, w, 24, 17, "#1e293b", label,
+              opacity, seed + 1, align="center", font_family=1),
     ]
 
 
@@ -393,6 +402,7 @@ def _connector(arrow_id, points, color, opacity, seed, label=None, label_pos=Non
         lx, ly = label_pos
         elements.append(_text(
             f"{arrow_id}-label", group_id, lx, ly, 60, 20, 14, "#475569", label, opacity, seed + 1,
+            font_family=1,
         ))
     return elements
 
@@ -496,6 +506,129 @@ def flowchart_sample(origin_x, origin_y, opacity, scale=0.7):
     return bind_flowchart_arrows(elements)
 
 
+def _polygon(shape_id, group_id, points, stroke, background, opacity, seed,
+             roughness=1, stroke_width=2, fill_style="solid"):
+    """A closed, filled shape from arbitrary points -- Excalidraw's `line`
+    type doubles as a polygon once its point list loops back to the start.
+    Used for the hand-drawn scene's mountains, where a plain rectangle/
+    ellipse/diamond can't give a triangular peak."""
+    x0, y0 = points[0]
+    closed = points + [points[0]]
+    xs = [p[0] for p in points]
+    ys = [p[1] for p in points]
+    return _shape(
+        shape_id, group_id, "line", x0, y0, max(xs) - min(xs) or 1, max(ys) - min(ys) or 1,
+        stroke, background, opacity, seed, fill_style=fill_style, roughness=roughness, stroke_width=stroke_width,
+        extra={
+            "points": [[px - x0, py - y0] for px, py in closed],
+            "startArrowhead": None,
+            "endArrowhead": None,
+        },
+    )
+
+
+def _bird(bird_id, group_id, x, y, span, stroke, opacity, seed, roughness=1):
+    """A single open two-stroke "v" (well, "w") -- the shorthand every kid's
+    drawing of a distant bird uses. Unfilled, roughness left at its sketchy
+    default so it reads as a quick pen mark rather than a drawn shape."""
+    half = span / 2
+    return _shape(
+        bird_id, group_id, "line", x - half, y, span, span * 0.4,
+        stroke, "transparent", opacity, seed, fill_style="solid", roughness=roughness, stroke_width=2,
+        extra={
+            "points": [[0, span * 0.4], [half * 0.5, 0], [half, span * 0.4],
+                       [half * 1.5, 0], [span, span * 0.4]],
+            "startArrowhead": None,
+            "endArrowhead": None,
+            "roundness": {"type": 2},
+        },
+    )
+
+
+def hand_drawn_scene(origin_x, origin_y, opacity):
+    """A small landscape, drawn by hand rather than composed from the KPI
+    templates: sun, two mountains, a tree and a couple of distant birds.
+    Faint (half the requested opacity) and roughness=2 -- Excalidraw's
+    "Cartoonist" setting, wobblier than the flowchart's clean roughness=0 or
+    even `_shape`'s own roughness=1 default -- so it reads as a light pencil
+    sketch left on the desk, not a drawn diagram."""
+    seed = 40000
+    elements = []
+    roughness = 2
+    faint = max(1, round(opacity * 0.5))
+
+    ground_y = origin_y + 320
+
+    # Sun: a disc plus radiating rays (each ray its own short line, so they
+    # come out as loose pen strokes instead of a single perfect starburst).
+    sun_cx, sun_cy, sun_r = origin_x + 90, origin_y + 70, 34
+    elements.append(_shape(
+        "scene-sun", "scene-sun-group", "ellipse",
+        sun_cx - sun_r, sun_cy - sun_r, sun_r * 2, sun_r * 2,
+        "#f59e0b", "#fbbf24", faint, seed, fill_style="solid", roughness=roughness,
+    ))
+    for i in range(8):
+        angle = math.radians(i * 45)
+        inner = sun_r + 8
+        outer = sun_r + 20
+        x1, y1 = sun_cx + inner * math.cos(angle), sun_cy + inner * math.sin(angle)
+        x2, y2 = sun_cx + outer * math.cos(angle), sun_cy + outer * math.sin(angle)
+        elements.append(_shape(
+            f"scene-sun-ray-{i}", "scene-sun-group", "line", x1, y1, abs(x2 - x1) or 1, abs(y2 - y1) or 1,
+            "#f59e0b", "transparent", faint, seed + 1 + i, stroke_width=2, roughness=roughness,
+            extra={"points": [[0, 0], [x2 - x1, y2 - y1]], "startArrowhead": None, "endArrowhead": None},
+        ))
+
+    # Two mountains, the near one overlapping the far one so they read as
+    # a range rather than two isolated triangles.
+    elements.append(_polygon(
+        "scene-mountain-far", "scene-mountains-group",
+        [(origin_x + 160, ground_y), (origin_x + 280, origin_y + 90), (origin_x + 400, ground_y)],
+        "#475569", "#94a3b8", faint, seed + 20, roughness=roughness,
+    ))
+    elements.append(_polygon(
+        "scene-mountain-near", "scene-mountains-group",
+        [(origin_x + 40, ground_y), (origin_x + 190, origin_y + 130), (origin_x + 340, ground_y)],
+        "#334155", "#64748b", faint, seed + 21, roughness=roughness,
+    ))
+
+    # Ground
+    elements.append(_shape(
+        "scene-ground", "scene-ground-group", "rectangle",
+        origin_x, ground_y, 520, 40, "#15803d", "#4ade80", faint, seed + 30,
+        fill_style="hachure", roughness=roughness,
+    ))
+
+    # A tree: trunk plus two overlapping foliage blobs, standing on the
+    # ground to the right of the mountains.
+    trunk_x, trunk_w, trunk_h = origin_x + 430, 16, 60
+    elements.append(_shape(
+        "scene-tree-trunk", "scene-tree-group", "rectangle",
+        trunk_x, ground_y - trunk_h, trunk_w, trunk_h + 8, "#78350f", "#92400e", faint, seed + 40,
+        roughness=roughness,
+    ))
+    for i, (dx, dy, r) in enumerate([(-18, -18, 34), (18, -14, 30), (0, -44, 32)]):
+        cx, cy = trunk_x + trunk_w / 2 + dx, ground_y - trunk_h + dy
+        elements.append(_shape(
+            f"scene-tree-foliage-{i}", "scene-tree-group", "ellipse",
+            cx - r, cy - r, r * 2, r * 2, "#166534", "#22c55e", faint, seed + 41 + i,
+            fill_style="solid", roughness=roughness,
+        ))
+
+    # A couple of birds, distant and small, in the empty sky between the
+    # sun and the tree.
+    elements.append(_bird(
+        "scene-bird-0", "scene-birds-group", origin_x + 280, origin_y + 40, 26, "#334155", faint, seed + 50,
+        roughness=roughness,
+    ))
+    elements.append(_bird(
+        "scene-bird-1", "scene-birds-group", origin_x + 320, origin_y + 60, 20, "#334155", faint, seed + 51,
+        roughness=roughness,
+    ))
+
+    return elements
+
+
 def dashboard_sample(origin_x, origin_y, opacity):
     """A small, polished KPI dashboard -- a title, three KPI cards, a
     chart/sparkline/progress row, and two donut badges -- built from the
@@ -560,6 +693,12 @@ def build_library_items(opacity):
         donut_badge("donut-uptime", 3400, "#38bdf8", "99.9%", "Uptime", opacity),
         donut_badge("donut-nps", 3500, "#a855f7", "62", "NPS", opacity),
         donut_badge("donut-churn", 3600, "#ef4444", "2.1%", "Churn", opacity),
+        # The hand-drawn landscape: not on the canvas by default any more
+        # (the flowchart is), but still one drag away for whoever wants it.
+        # Origin (0, 0), not the canvas's usual (100, 100) -- Library items
+        # are dropped wherever the cursor is, so they're authored relative
+        # to their own top-left corner.
+        {"id": "scene-landscape", "elements": hand_drawn_scene(0, 0, opacity)},
     ]
     # the navbar chips only copy hex codes, and Excalidraw fills a shape with a
     # single colour -- these banded bars are how a gradient actually gets onto
@@ -579,9 +718,11 @@ def build_canvas_elements(opacity):
     desk with no artboard rectangle behind it. The canvas pans freely, so a
     fixed background isn't earning its keep here the way it does for the
     Power-BI-export use case (artboard_frame is still there to compose in by
-    hand, e.g. from the Library, whenever that's actually needed). The KPI
-    templates themselves live in the Personal Library instead of being
-    pre-placed on the canvas; drag one out when it's actually wanted."""
+    hand, e.g. from the Library, whenever that's actually needed).
+    hand_drawn_scene and the KPI templates are just as available, they're
+    just not what greets a first-time visitor. The KPI templates themselves
+    live in the Personal Library instead of being pre-placed on the canvas;
+    drag one out when it's actually wanted."""
     return flowchart_sample(100, 100, opacity)
 
 
@@ -612,8 +753,23 @@ def build_excalidraw_with_elements(component_id, elements, opacity, height="85vh
         # the dash-excalidraw wrapper defaults tools.image to disabled --
         # the toolbar button renders either way, but does nothing until this
         # is set, so the image tool otherwise looks broken (no file picker
-        # opens, no error either)
-        UIOptions={"canvasActions": {"toggleTheme": True}, "tools": {"image": True}},
+        # opens, no error either). clearCanvas surfaces Excalidraw's own
+        # "Reset the canvas" action (confirmation dialog included) in the
+        # hamburger menu, top left -- a real "clear everything" button
+        # rather than a custom one built against the command prop. Same
+        # idea for saving: saveAsImage puts "Export image" in that menu
+        # (PNG/SVG/clipboard, the flow the module docstring's export steps
+        # already assume), and export.saveFileToDisk adds a one-click
+        # "Save to disk" alongside it that skips the dialog.
+        UIOptions={
+            "canvasActions": {
+                "toggleTheme": True,
+                "clearCanvas": True,
+                "saveAsImage": True,
+                "export": {"saveFileToDisk": True},
+            },
+            "tools": {"image": True},
+        },
         # lets the "Web Embed" tool (More tools menu) embed any http(s) URL,
         # not just Excalidraw's default-recognised providers (YouTube, Figma,
         # ...). Live only in the editor -- PNG export shows a blank

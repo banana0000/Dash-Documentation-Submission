@@ -1,0 +1,8 @@
+/* excalidraw_kpi.py: the keyboard-shortcut pills in Excalidraw's Help dialog
+   (the "?" button, bottom right) -- yellow background, black text, found by
+   inspecting the live dialog's DOM (class="HelpDialog__key" on each <kbd>). */
+.HelpDialog__key {
+    background-color: #fbbf24 !important;
+    color: #000000 !important;
+    border-color: #b45309 !important;
+}
