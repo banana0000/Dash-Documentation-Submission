@@ -113,6 +113,11 @@ dash-improve-my-llms[flask]>=2.3.4
 # see components/excalidraw_kpi.py's module docstring for the difference.
 dash-excalidraw @ git+https://github.com/pip-install-python/dash-excalidraw.git
 
+# The /dash-flow page (components/dash_flow_playground.py, pages/dash-flow.py,
+# and the standalone dash_flow_app.py). Node/edge diagram component (React
+# Flow), from PyPI.
+dash_flows>=1.3.0
+
 # Production Servers
 # - gunicorn   -> WSGI (Flask)
 # - uvicorn    -> ASGI (FastAPI / Quart)

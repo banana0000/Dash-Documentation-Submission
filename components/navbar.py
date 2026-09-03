@@ -16,6 +16,7 @@ excluded_links = [
 # own "Apps" section instead of getting lumped in with "Documentation".
 apps_paths = [
     "/excalidraw",
+    "/dash-flow",
 ]
 
 

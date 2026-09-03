@@ -14,11 +14,12 @@ from conftest import CRAWLER_UA, STUB_MARKER, main_body
 #
 # This is the trimmed color-picker submission, not the full boilerplate
 # template: the only pages that ship are the home page, the color-picker
-# docs demo, and the Excalidraw KPI mockup.
+# docs demo, the Excalidraw KPI mockup, and the Dash Flow playground.
 REQUIRED_PATHS = {
     "/",
     "/examples/color-picker",
     "/excalidraw",
+    "/dash-flow",
 }
 
 

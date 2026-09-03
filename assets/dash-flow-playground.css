@@ -1,0 +1,15 @@
+/* components/dash_flow_playground.py: the DashFlows `style` prop
+   ({"width": "100%", "height": "100%"}) never reaches the component's own
+   root div (dash_flows 1.3.0 doesn't forward `style` to the wrapper it
+   renders) -- confirmed by inspecting the live DOM, where that div carries
+   no style attribute at all. Its child (.react-flow) has height:100% with
+   nothing definite above it to resolve against, so React Flow measures a
+   0px container and refuses to render ("Error 004: The parent container
+   needs a width and a height"). Setting the height directly here, on the
+   exact id Dash gives that div, fixes the chain: the dmc.Paper wrapper one
+   level up already has a real height (an explicit calc()), so 100% here
+   resolves against that instead of collapsing. */
+#flow-playground-flow {
+    width: 100%;
+    height: 100%;
+}
