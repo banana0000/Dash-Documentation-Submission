@@ -7,7 +7,7 @@ from dash_iconify import DashIconify
 from components.dash_flow_playground import build_flow_playground
 from lib.constants import HEADER_HEIGHT, OG_IMAGE_URL, PAGE_TITLE_PREFIX
 
-NAME = "Dash Flow Playground"
+NAME = "Dash Flow Playground *"
 DESCRIPTION = (
     "A playground for dash-flows (2plot.ai / React Flow) -- switch between a decision "
     "tree, a process diagram and an org chart, add nodes, and double-click any node to "
@@ -70,25 +70,34 @@ _copy_button = dmc.Tooltip(
     withArrow=True,
 )
 
+# A slim single-row title bar instead of a full Title+description block --
+# same treatment as pages/excalidraw.py, and it hands the canvas roughly
+# 100px more height than the old layout did. fluid=True (no max-width) does
+# the same for width.
+_TITLE_ROW_HEIGHT = 52
+# AppShellMain's own padding="xl" (top+bottom, from components/appshell.py)
+# plus the controls row (Select/Add node/label editor/Save/Export) and its
+# gap -- measured empirically, not derived from Mantine's spacing tokens.
+# Container's own py went to 0 (was "sm"), which freed up more of that
+# budget for the canvas -- this dropped accordingly, re-measure if either
+# changes again.
+_CHROME_HEIGHT = 125
+
 layout = dmc.Container(
     [
         dmc.Group(
             justify="space-between",
-            align="flex-start",
-            mb="lg",
+            align="center",
+            style={"height": _TITLE_ROW_HEIGHT},
             children=[
-                dmc.Stack(
-                    [
-                        dmc.Title(NAME, order=1, mb=0),
-                        dmc.Text(DESCRIPTION, c="dimmed", size="sm"),
-                    ],
-                    gap=4,
-                ),
+                dmc.Title(NAME, order=4, className="m2d-heading", style={"margin": 0}),
                 _copy_button,
             ],
         ),
-        build_flow_playground(height=f"calc(100vh - {HEADER_HEIGHT + 160}px)"),
+        build_flow_playground(
+            height=f"calc(100vh - {HEADER_HEIGHT + _TITLE_ROW_HEIGHT + _CHROME_HEIGHT}px)"
+        ),
     ],
-    size="lg",
-    py="xl",
+    fluid=True,
+    py=0,
 )

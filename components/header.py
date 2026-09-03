@@ -4,7 +4,6 @@ from dash_iconify import DashIconify
 
 from components.backend_badge import create_backend_badge
 from lib.backend import get_backend_info
-from lib.constants import SITE_SHORT_NAME
 
 
 def create_link(icon, href):
@@ -103,13 +102,6 @@ def create_header(data):
                                     html.Img(
                                         src=get_asset_url('ddb.png'),
                                         style={'height': '36px', 'width': '36px'}
-                                    ),
-                                    dmc.Text(
-                                        SITE_SHORT_NAME,
-                                        size="lg",
-                                        fw=700,
-                                        c="#03c7e5",
-                                        id="dash-docs-title",
                                     ),
                                 ],
                                 gap="sm",

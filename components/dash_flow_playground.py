@@ -12,9 +12,10 @@ Element ids are prefixed ``flow-playground-`` so this page's callbacks never
 collide with ids on any other page of the same running multi-page app.
 """
 import dash
-from dash import dcc, callback, Input, Output, State, no_update
+from dash import dcc, callback, clientside_callback, Input, Output, State, no_update
 import dash_mantine_components as dmc
 from dash_flows import DashFlows
+from dash_iconify import DashIconify
 
 PRESETS = {
     "decision": {
@@ -92,31 +93,50 @@ def build_flow_playground(height="70vh"):
     """
     return dmc.Stack(
         [
+            # One row: preset picker + Add node on the left, the label
+            # editor + Save label on the right -- was two stacked Groups,
+            # merged so the controls take one row's height instead of two
+            # and the canvas below gets the rest.
             dmc.Group(
                 [
+                    dmc.Button("Add node", id=_id("add-node-btn"), n_clicks=0, variant="filled"),
+                    dmc.TextInput(
+                        id=_id("node-label-input"),
+                        placeholder="Double-click a node to edit its text",
+                        disabled=True,
+                        w=280,
+                    ),
+                    dmc.Tooltip(
+                        dmc.ActionIcon(
+                            DashIconify(icon="mdi:content-save-outline", width=18),
+                            id=_id("save-label-btn"),
+                            n_clicks=0,
+                            variant="light",
+                            size="lg",
+                            disabled=True,
+                        ),
+                        label="Save label",
+                        position="top",
+                        withArrow=True,
+                    ),
+                    dmc.Button(
+                        "Export PNG", id=_id("export-png-btn"), n_clicks=0, variant="outline", color="grape",
+                    ),
+                    # marginLeft: auto pushes just this element (the preset
+                    # picker) to the far right of the row, leaving the
+                    # action buttons packed together on the left.
                     dmc.Select(
                         id=_id("preset-picker"),
                         data=[{"label": v["label"], "value": k} for k, v in PRESETS.items()],
                         value="decision",
                         clearable=False,
                         allowDeselect=False,
-                        w=300,
+                        w=260,
+                        style={"marginLeft": "auto"},
                     ),
-                    dmc.Button("Add node", id=_id("add-node-btn"), n_clicks=0, variant="filled"),
                 ],
                 gap="sm",
-            ),
-            dmc.Group(
-                [
-                    dmc.TextInput(
-                        id=_id("node-label-input"),
-                        placeholder="Double-click a node to edit its text",
-                        disabled=True,
-                        w=320,
-                    ),
-                    dmc.Button("Save label", id=_id("save-label-btn"), n_clicks=0, variant="light", disabled=True),
-                ],
-                gap="sm",
+                wrap="wrap",
             ),
             dmc.Paper(
                 DashFlows(
@@ -129,7 +149,16 @@ def build_flow_playground(height="70vh"):
                     showBackground=True,
                     colorMode="dark",
                     themePreset="glass",
+                    # The canvas backdrop itself stays colorMode="dark"'s own
+                    # near-black -- this only reaches the dot-grid pattern
+                    # (via --xy-background-pattern-color-props), not the
+                    # backdrop, confirmed by inspecting the live DOM. Faint
+                    # black rather than the pattern's own default grey, so
+                    # the grid reads as a subtle texture on black instead of
+                    # standing out.
+                    backgroundColor="rgba(0, 0, 0, 0.4)",
                     style={"width": "100%", "height": "100%"},
+                    downloadImage=None,
                 ),
                 withBorder=True,
                 radius="md",
@@ -137,6 +166,8 @@ def build_flow_playground(height="70vh"):
             ),
             dcc.Store(id=_id("node-counter"), data=0),
             dcc.Store(id=_id("editing-node-id"), data=None),
+            # sink for the focus/select-text clientside callback below
+            dcc.Store(id=_id("focus-sink")),
         ],
         gap="sm",
     )
@@ -210,3 +241,51 @@ def _update_flow(preset_key, n_clicks, save_clicks, current_nodes, current_edges
         return current_nodes + [new_node], current_edges + [new_edge], counter
 
     return no_update, no_update, no_update
+
+
+@callback(
+    Output(_id("flow"), "downloadImage"),
+    Input(_id("export-png-btn"), "n_clicks"),
+    prevent_initial_call=True,
+)
+def _export_png(_n_clicks):
+    """`downloadImage` is a write-only trigger: setting it starts the
+    download client-side and the component resets it back to None once
+    done, so there's nothing to read back here."""
+    return {
+        "format": "png",
+        "filename": "dash-flow-diagram",
+        "backgroundColor": "#0f172a",
+        "pixelRatio": 2,
+    }
+
+
+# Selects the label text (not just focuses the field) the moment a
+# double-click starts an edit, so typing immediately replaces it instead of
+# inserting at wherever the cursor happens to land. Reads the input by id
+# rather than an event target, since this fires from editing-node-id
+# (set by _start_editing_label above) rather than a DOM event on the field
+# itself; the id could resolve to the <input> directly or to a Mantine
+# wrapper div around it, so both are handled. A short setTimeout lets the
+# Python round-trip's value/disabled update commit to the DOM first.
+clientside_callback(
+    """
+    function(editingId) {
+        if (!editingId) {
+            return window.dash_clientside.no_update;
+        }
+        setTimeout(function() {
+            const el = document.getElementById('flow-playground-node-label-input');
+            const input = el && (el.tagName === 'INPUT' ? el : el.querySelector('input'));
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        }, 50);
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output(_id("focus-sink"), "data"),
+    Input(_id("editing-node-id"), "data"),
+    prevent_initial_call=True,
+)
