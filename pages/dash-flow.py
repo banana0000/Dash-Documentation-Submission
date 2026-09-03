@@ -95,7 +95,9 @@ layout = dmc.Container(
             ],
         ),
         build_flow_playground(
-            height=f"calc(100vh - {HEADER_HEIGHT + _TITLE_ROW_HEIGHT + _CHROME_HEIGHT}px)"
+            # Double the previous (half-viewport) height this page used --
+            # back to the plain viewport-fit height.
+            height=f"calc(100vh - {HEADER_HEIGHT + _TITLE_ROW_HEIGHT + _CHROME_HEIGHT}px)",
         ),
     ],
     fluid=True,
