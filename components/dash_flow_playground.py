@@ -79,6 +79,19 @@ PRESETS = {
     },
 }
 
+
+def _animate_edge(edge):
+    """Swap in dash-flows' AnimatedSvgEdge (edge type "animatedSvg") so a
+    small dot travels along the connection, on top of the dashed-line
+    "animated" flag every edge already carries. Colour/size follow the
+    edge's own stroke so the travelling dot matches its line."""
+    color = edge.get("style", {}).get("stroke", "#4263eb")
+    return {**edge, "type": "animatedSvg", "data": {"shape": "circle", "size": 7, "color": color, "duration": 1.8}}
+
+
+for _preset in PRESETS.values():
+    _preset["edges"] = [_animate_edge(e) for e in _preset["edges"]]
+
 NODE_COLORS = ["#4263eb", "#12b886", "#fd7e14", "#e64980", "#7048e8", "#f08c00"]
 
 # ELK algorithm presets for the "Layout" picker -- keys go in layoutOptions
@@ -282,12 +295,12 @@ def _update_flow(preset_key, n_clicks, save_clicks, current_nodes, current_edges
                 "padding": "10px 16px", "fontWeight": 600, "width": 160,
             },
         }
-        new_edge = {
+        new_edge = _animate_edge({
             "id": f"e-{last_node['id']}-{new_id}",
             "source": last_node["id"], "target": new_id,
             "animated": True,
             "style": {"stroke": new_node["style"]["background"], "strokeWidth": 2.5},
-        }
+        })
         updated_nodes = current_nodes[:-1] + [last_node]
         return updated_nodes + [new_node], current_edges + [new_edge], counter
 
