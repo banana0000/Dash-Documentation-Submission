@@ -93,10 +93,10 @@ def build_flow_playground(height="70vh"):
     """
     return dmc.Stack(
         [
-            # One row: preset picker + Add node on the left, the label
-            # editor + Save label on the right -- was two stacked Groups,
-            # merged so the controls take one row's height instead of two
-            # and the canvas below gets the rest.
+            # One row, every control packed together on the right
+            # (justify="flex-end") -- was split (picker right, actions
+            # left) via marginLeft: auto on just the picker; now the whole
+            # cluster moves as one.
             dmc.Group(
                 [
                     dmc.Button("Add node", id=_id("add-node-btn"), n_clicks=0, variant="filled"),
@@ -122,9 +122,6 @@ def build_flow_playground(height="70vh"):
                     dmc.Button(
                         "Export PNG", id=_id("export-png-btn"), n_clicks=0, variant="outline", color="grape",
                     ),
-                    # marginLeft: auto pushes just this element (the preset
-                    # picker) to the far right of the row, leaving the
-                    # action buttons packed together on the left.
                     dmc.Select(
                         id=_id("preset-picker"),
                         data=[{"label": v["label"], "value": k} for k, v in PRESETS.items()],
@@ -132,9 +129,9 @@ def build_flow_playground(height="70vh"):
                         clearable=False,
                         allowDeselect=False,
                         w=260,
-                        style={"marginLeft": "auto"},
                     ),
                 ],
+                justify="flex-end",
                 gap="sm",
                 wrap="wrap",
             ),
@@ -159,6 +156,14 @@ def build_flow_playground(height="70vh"):
                     backgroundColor="rgba(0, 0, 0, 0.4)",
                     style={"width": "100%", "height": "100%"},
                     downloadImage=None,
+                    # A few extras beyond the original playground: undo/redo
+                    # (Ctrl+Z / Ctrl+Y, built into the component -- no extra
+                    # wiring needed), Delete-key removal of a selected node
+                    # or edge, and helper lines while dragging a node so it
+                    # snaps into alignment with its neighbours.
+                    enableUndoRedo=True,
+                    deleteKeyCode="Delete",
+                    helperLines=True,
                 ),
                 withBorder=True,
                 radius="md",
@@ -222,6 +227,13 @@ def _update_flow(preset_key, n_clicks, save_clicks, current_nodes, current_edges
         counter = (counter or 0) + 1
         new_id = f"extra-{counter}"
         last_node = current_nodes[-1]
+        # An "output"-type node has no source handle in React Flow, so an
+        # edge leaving it crashes the component (Error 008). Chaining off
+        # one of those just means it's no longer the end of the graph, so
+        # drop the type and let it fall back to the default node (both
+        # handles).
+        if last_node.get("type") == "output":
+            last_node = {k: v for k, v in last_node.items() if k != "type"}
         new_node = {
             "id": new_id,
             "position": {"x": last_node["position"]["x"] + 60, "y": last_node["position"]["y"] + 120},
@@ -238,7 +250,8 @@ def _update_flow(preset_key, n_clicks, save_clicks, current_nodes, current_edges
             "animated": True,
             "style": {"stroke": new_node["style"]["background"], "strokeWidth": 2.5},
         }
-        return current_nodes + [new_node], current_edges + [new_edge], counter
+        updated_nodes = current_nodes[:-1] + [last_node]
+        return updated_nodes + [new_node], current_edges + [new_edge], counter
 
     return no_update, no_update, no_update
 
