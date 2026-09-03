@@ -11,6 +11,8 @@ Shared between two entry points, the same shape as components/excalidraw_kpi.py:
 Element ids are prefixed ``flow-playground-`` so this page's callbacks never
 collide with ids on any other page of the same running multi-page app.
 """
+import json
+
 import dash
 from dash import dcc, callback, clientside_callback, Input, Output, State, no_update
 import dash_mantine_components as dmc
@@ -79,6 +81,31 @@ PRESETS = {
 
 NODE_COLORS = ["#4263eb", "#12b886", "#fd7e14", "#e64980", "#7048e8", "#f08c00"]
 
+# ELK algorithm presets for the "Layout" picker -- keys go in layoutOptions
+# (sent to DashFlows as a JSON string, per its own prop type). animateLayout
+# on the component makes nodes glide from their current spot to the new one
+# instead of snapping.
+LAYOUT_PRESETS = {
+    "layered-down": {
+        "label": "Layered (Down)",
+        "options": {"elk.algorithm": "layered", "elk.direction": "DOWN",
+                    "elk.spacing.nodeNode": "60", "elk.layered.spacing.nodeNodeBetweenLayers": "90"},
+    },
+    "layered-right": {
+        "label": "Layered (Right)",
+        "options": {"elk.algorithm": "layered", "elk.direction": "RIGHT",
+                    "elk.spacing.nodeNode": "60", "elk.layered.spacing.nodeNodeBetweenLayers": "90"},
+    },
+    "tree": {
+        "label": "Tree",
+        "options": {"elk.algorithm": "mrtree", "elk.direction": "DOWN", "elk.spacing.nodeNode": "60"},
+    },
+    "radial": {
+        "label": "Radial",
+        "options": {"elk.algorithm": "radial", "elk.spacing.nodeNode": "60"},
+    },
+}
+
 _ID_PREFIX = "flow-playground-"
 
 
@@ -123,6 +150,13 @@ def build_flow_playground(height="70vh"):
                         "Export PNG", id=_id("export-png-btn"), n_clicks=0, variant="outline", color="grape",
                     ),
                     dmc.Select(
+                        id=_id("layout-picker"),
+                        placeholder="Auto layout",
+                        data=[{"label": v["label"], "value": k} for k, v in LAYOUT_PRESETS.items()],
+                        clearable=True,
+                        w=170,
+                    ),
+                    dmc.Select(
                         id=_id("preset-picker"),
                         data=[{"label": v["label"], "value": k} for k, v in PRESETS.items()],
                         value="decision",
@@ -164,6 +198,10 @@ def build_flow_playground(height="70vh"):
                     enableUndoRedo=True,
                     deleteKeyCode="Delete",
                     helperLines=True,
+                    # Nodes glide to their new spot instead of snapping when
+                    # the Layout picker below sets layoutOptions.
+                    animateLayout=True,
+                    animateLayoutDuration=400,
                 ),
                 withBorder=True,
                 radius="md",
@@ -254,6 +292,17 @@ def _update_flow(preset_key, n_clicks, save_clicks, current_nodes, current_edges
         return updated_nodes + [new_node], current_edges + [new_edge], counter
 
     return no_update, no_update, no_update
+
+
+@callback(
+    Output(_id("flow"), "layoutOptions"),
+    Input(_id("layout-picker"), "value"),
+    prevent_initial_call=True,
+)
+def _apply_layout(layout_key):
+    if not layout_key:
+        return no_update
+    return json.dumps(LAYOUT_PRESETS[layout_key]["options"])
 
 
 @callback(
