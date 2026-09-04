@@ -17,6 +17,7 @@ excluded_links = [
 apps_paths = [
     "/excalidraw",
     "/dash-flow",
+    "/roamly",
 ]
 
 
