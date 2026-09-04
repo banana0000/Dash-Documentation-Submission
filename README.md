@@ -118,6 +118,23 @@ pip install "git+https://github.com/pip-install-python/dash-excalidraw.git"
 python excalidraw_app.py
 ```
 
+Roamly — a house-only stay/property booking platform mockup, unrelated to the color picker. Listed under **Apps** in the site's nav (opens in a new tab) at `/roamly`.
+
+Unlike the Excalidraw and Dash Flow tools above, Roamly is not a component embedded into this site's own multi-page app — it's a full standalone Dash app with its own `AppShell`, theme, dark-mode toggle and page router, so running it inline here would collide with this site's own element ids. `/roamly` is a short link-out page instead of an embed; the app itself lives in `roamly/` at the repo root:
+
+| Page | Route | Notes |
+|---|---|---|
+| Listings | `/` | Grid of stays, each a `dmc.Card` built from `data.py`'s demo listing dict |
+| Listing detail | `/listing/<id>` | Image gallery (`dash_image_gallery`), amenities, host info, and a `dash_leaflet2` map |
+| Host dashboard | `/host` | A host's listings with `dash_mui_charts` view-count charts |
+
+```bash
+pip install -r requirements.txt   # pulls in dash_leaflet2, dash_image_gallery, dash_mui_charts
+python roamly/app.py
+```
+
+Serves on **http://localhost:8870** — its own `Dash(__name__)` instance, no imports from this repo's `pages/` or `components/`.
+
 ---
 
 ## License
