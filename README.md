@@ -124,9 +124,9 @@ Unlike the Excalidraw and Dash Flow tools above, Roamly is not a component embed
 
 | Page | Route | Notes |
 |---|---|---|
-| Listings | `/` | Grid of stays, each a `dmc.Card` built from `data.py`'s demo listing dict |
-| Listing detail | `/listing/<id>` | Image gallery (`dash_image_gallery`), amenities, host info, and a `dash_leaflet2` map |
-| Host dashboard | `/host` | A host's listings with `dash_mui_charts` view-count charts |
+| Listings | `/` | Grid of 4 demo stays (`data.py`), plus a wide Mercator world overview map (Plotly `Scattergeo`) pinning all of them below the grid |
+| Listing detail | `/listing/<id>` | Full-width description and image gallery (`dash_image_gallery`), a booking card with a `dmc.TimePicker` check-in field and host info, and a full-width `dash_leaflet2` map with its own draw/edit toolbar (`dl.EditControl`) |
+| Host dashboard | `/host` | A host's listings with `dash_mui_charts` view-count charts, styled to stay readable in Roamly's own dark mode (the chart library doesn't follow Mantine's color scheme on its own) |
 
 ```bash
 pip install -r requirements.txt   # pulls in dash_leaflet2, dash_image_gallery, dash_mui_charts

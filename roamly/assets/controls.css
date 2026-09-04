@@ -1,0 +1,75 @@
+/* Teal accent for controls that aren't Mantine components -- Leaflet's own
+   zoom buttons, dash_leaflet2's EditControl toolbar, and dash_image_gallery's
+   nav arrows -- so they can't be recolored via a dmc `color` prop and need
+   their real class names targeted directly instead. */
+
+/* Leaflet's built-in zoom +/- control (native Leaflet markup, not Mantine) */
+.leaflet-bar a,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+    color: #12b886 !important;
+}
+.leaflet-bar a:hover {
+    color: #0ca678 !important;
+}
+
+/* dash_leaflet2's EditControl draw/edit toolbar is left at its own default
+   blue -- not recolored here, unlike the other controls on this page. */
+
+/* dash_image_gallery's prev/next arrows and play/fullscreen icons (SVGs use
+   fill: currentColor, so `color` alone recolors them) -- green here rather
+   than the teal above. */
+.image-gallery-icon {
+    color: #2f9e44 !important;
+}
+.image-gallery-icon:hover {
+    color: #237a37 !important;
+}
+
+/* Clicking into the gallery focuses the slide/image/icon, which shows the
+   browser's default blue focus ring -- green instead, to match. */
+.image-gallery-image:focus,
+.image-gallery-image:focus-visible,
+.image-gallery-slide:focus,
+.image-gallery-slide:focus-visible,
+.image-gallery-icon:focus,
+.image-gallery-icon:focus-visible {
+    outline-color: #2f9e44 !important;
+}
+
+/* dash_image_gallery's own CSS sets object-fit: contain (loaded after this
+   file, so it wins ties without !important) -- that's the actual cause of
+   the empty space: the <img> box was already full-width, but its content
+   was letterboxed inside it instead of filling it. !important forces the
+   crop-to-fill behaviour instead. */
+.image-gallery-slide .image-gallery-image {
+    width: 100% !important;
+    height: 420px !important;
+    object-fit: cover !important;
+}
+
+/* dash_mui_charts (MUI X-Charts underneath) has its own theme, separate
+   from Mantine's -- its axis/legend text stays MUI's default near-black
+   (rgba(0,0,0,.87)) even when the page switches to dark mode via the
+   color-scheme-toggle in app.py, so it goes near-invisible on a dark
+   background. Scoped to dark mode only via the attribute Mantine sets on
+   <html>, so light mode is untouched. */
+html[data-mantine-color-scheme="dark"] .MuiChartsAxis-tickLabel,
+html[data-mantine-color-scheme="dark"] .MuiChartsAxis-label {
+    fill: #ced4da !important;
+    color: #ced4da !important;
+}
+
+/* The tooltip's own popup keeps MUI's light background regardless of the
+   page's dark mode (a separate, un-synced theme), so its text stays dark
+   rather than following the light-gray treatment above. */
+html[data-mantine-color-scheme="dark"] .MuiChartsTooltip-cell {
+    color: #1a1b1e !important;
+}
+
+/* The legend (series names above the bar chart) reads white rather than
+   the light gray above. Its root is a plain <ul> (MuiChartsLegend's Root
+   slot), not SVG, so this is a `color` rule, not `fill`. */
+html[data-mantine-color-scheme="dark"] .MuiChartsLegend-label {
+    color: #ffffff !important;
+}

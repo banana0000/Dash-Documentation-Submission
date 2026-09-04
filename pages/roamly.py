@@ -51,7 +51,7 @@ layout = dmc.Container(
                 [
                     dmc.ThemeIcon(
                         DashIconify(icon="tabler:map-2", width=22),
-                        size=44, radius="xl", variant="filled", color="indigo",
+                        size=44, radius="xl", variant="filled", color="green",
                     ),
                     dmc.Title(NAME, order=3, className="m2d-heading", style={"margin": 0}),
                 ],

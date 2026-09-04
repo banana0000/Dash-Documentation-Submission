@@ -54,6 +54,7 @@ def layout(listing_id=None, **kwargs):
             ),
         ],
         withBorder=True,
+        h="100%",
     )
 
     map_panel = dmc.Card(
@@ -70,9 +71,13 @@ def layout(listing_id=None, **kwargs):
                         position=listing["coords"],
                         popup=listing["title"],
                         iconify="tabler:map-pin-filled",
-                        iconColor="#4c6ef5",
+                        iconColor="#2f9e44",
                         iconSize=32,
                     ),
+                    # dash_leaflet2's own draw/edit toolbar (2plot.ai) -- a
+                    # direct child of dl.Map, shapes kept in its own internal
+                    # FeatureGroup, so no manual wrapping needed.
+                    dl.EditControl(position="topright"),
                 ],
                 center=listing["coords"],
                 zoom=12,
@@ -83,50 +88,66 @@ def layout(listing_id=None, **kwargs):
     )
 
     booking_panel = dmc.Card(
-        [
-            dmc.Group(
-                [
-                    dmc.Text([dmc.Text(f"${listing['price']}", span=True, fw=700, size="xl"), f" / {listing['price_unit']}"]),
-                    dmc.Badge(
-                        f"★ {listing['rating']} ({listing['reviews']})",
-                        variant="light", color="yellow",
-                    ),
-                ],
-                justify="space-between",
-            ),
-            dmc.Divider(my="sm"),
-            dmc.Stack(
-                [
-                    stat("tabler:bed", f"{listing['beds']} beds"),
-                    stat("tabler:bath", f"{listing['baths']} baths"),
-                    stat("tabler:users", f"{listing['guests']} guests"),
-                ],
-                gap="xs",
-            ),
-            dmc.Divider(my="sm"),
-            dmc.Button("Request to book", fullWidth=True, size="md"),
-            dmc.Text("You won't be charged yet", size="xs", c="dimmed", ta="center", mt="xs"),
-        ],
-        withBorder=True,
-    )
-
-    host_panel = dmc.Card(
-        dmc.Group(
+        # justify="space-between" spreads these across the card's full
+        # height (stretched to match gallery_panel next to it) instead of
+        # packing at the top and leaving dead space at the bottom.
+        dmc.Stack(
             [
-                dmc.Avatar(listing["host"]["name"][0], radius="xl", color="indigo"),
-                dmc.Stack(
+                dmc.Group(
                     [
-                        dmc.Text(f"Hosted by {listing['host']['name']}", fw=600, size="sm"),
-                        dmc.Text(
-                            f"Hosting since {listing['host']['since']} · {listing['host']['listings']} listings",
-                            size="xs", c="dimmed",
+                        dmc.Text([dmc.Text(f"${listing['price']}", span=True, fw=700, size="xl"), f" / {listing['price_unit']}"]),
+                        dmc.Badge(
+                            f"★ {listing['rating']} ({listing['reviews']})",
+                            variant="light", color="yellow",
                         ),
                     ],
-                    gap=0,
+                    justify="space-between",
+                ),
+                dmc.Divider(),
+                dmc.Stack(
+                    [
+                        stat("tabler:bed", f"{listing['beds']} beds"),
+                        stat("tabler:bath", f"{listing['baths']} baths"),
+                        stat("tabler:users", f"{listing['guests']} guests"),
+                    ],
+                    gap="xs",
+                ),
+                dmc.Divider(),
+                dmc.TimePicker(
+                    id="listing-checkin-time",
+                    label="Check-in time",
+                    value="15:00",
+                    withDropdown=True,
+                ),
+                dmc.Stack(
+                    [
+                        dmc.Button("Request to book", fullWidth=True, size="md"),
+                        dmc.Text("You won't be charged yet", size="xs", c="dimmed", ta="center"),
+                    ],
+                    gap="xs",
+                ),
+                dmc.Divider(),
+                dmc.Group(
+                    [
+                        dmc.Avatar(listing["host"]["name"][0], radius="xl", color="green"),
+                        dmc.Stack(
+                            [
+                                dmc.Text(f"Hosted by {listing['host']['name']}", fw=600, size="sm"),
+                                dmc.Text(
+                                    f"Hosting since {listing['host']['since']} · {listing['host']['listings']} listings",
+                                    size="xs", c="dimmed",
+                                ),
+                            ],
+                            gap=0,
+                        ),
+                    ],
                 ),
             ],
+            justify="space-between",
+            h="100%",
         ),
         withBorder=True,
+        h="100%",
     )
 
     return dmc.Container(
@@ -142,18 +163,21 @@ def layout(listing_id=None, **kwargs):
                 ],
                 gap=2, mb="md",
             ),
+            # The description sits above the gallery, full width -- and the
+            # gallery card is stretch-aligned against the booking card next
+            # to it (which also carries the host info), so the two match
+            # height. The map (its own card, "Location") runs full width
+            # below both.
+            dmc.Card(dmc.Text(listing["summary"]), withBorder=True, mb="md"),
             dmc.Grid(
                 [
-                    dmc.GridCol(
-                        dmc.Stack([gallery_panel, dmc.Card(dmc.Text(listing["summary"]), withBorder=True), map_panel], gap="md"),
-                        span={"base": 12, "md": 8},
-                    ),
-                    dmc.GridCol(
-                        dmc.Stack([booking_panel, host_panel], gap="md"),
-                        span={"base": 12, "md": 4},
-                    ),
+                    dmc.GridCol(gallery_panel, span={"base": 12, "md": 8}),
+                    dmc.GridCol(booking_panel, span={"base": 12, "md": 4}),
                 ],
+                align="stretch",
+                mb="md",
             ),
+            map_panel,
         ],
         size="lg", py="md",
     )

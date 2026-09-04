@@ -10,12 +10,12 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 import dash
-from dash import Dash, callback, Input, Output, State
+from dash import Dash, callback, dcc, Input, Output, State
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
 theme = {
-    "primaryColor": "indigo",
+    "primaryColor": "green",
     "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     "defaultRadius": "md",
     "components": {
@@ -44,9 +44,13 @@ navbar = dmc.AppShellHeader(
                         [
                             dmc.ThemeIcon(
                                 DashIconify(icon="tabler:map-2", width=22),
-                                size=38, radius="xl", variant="filled", color="indigo",
+                                size=38, radius="xl", variant="filled", color="green",
                             ),
-                            dmc.Text("Roamly", fw=700, size="lg"),
+                            dmc.Text(
+                                "Roamly", fw=700, size="lg",
+                                variant="gradient",
+                                gradient={"from": "blue", "to": "green", "deg": 45},
+                            ),
                         ],
                         gap="xs",
                     ),
@@ -54,8 +58,13 @@ navbar = dmc.AppShellHeader(
                 ),
                 dmc.Group(
                     [
-                        dmc.Anchor(dmc.Button("Stays", variant="subtle", color="gray"), href="/"),
-                        dmc.Anchor(dmc.Button("Host dashboard", variant="subtle", color="gray"), href="/host"),
+                        dmc.Anchor(
+                            dmc.Button("Stays", id="nav-stays-btn", variant="subtle", color="gray"), href="/",
+                        ),
+                        dmc.Anchor(
+                            dmc.Button("Host dashboard", id="nav-host-btn", variant="subtle", color="gray"),
+                            href="/host",
+                        ),
                         dmc.ActionIcon(
                             DashIconify(icon="tabler:moon", width=18, id="color-scheme-icon"),
                             id="color-scheme-toggle",
@@ -90,16 +99,22 @@ app.layout = dmc.MantineProvider(
     id="mantine-provider",
     theme=theme,
     forceColorScheme="light",
-    children=dmc.AppShell(
-        [
-            navbar,
-            dmc.AppShellMain(dash.page_container, pt=64, pb=48),
-            footer,
-        ],
-        header={"height": 64},
-        footer={"height": 48},
-        padding="md",
-    ),
+    children=[
+        # A dedicated Location just for the nav-highlight callback below --
+        # independent from whatever dcc.Location use_pages=True wires up
+        # internally for the actual routing, so it can't collide with it.
+        dcc.Location(id="roamly-url", refresh=False),
+        dmc.AppShell(
+            [
+                navbar,
+                dmc.AppShellMain(dash.page_container, pt=64, pb=48),
+                footer,
+            ],
+            header={"height": 64},
+            footer={"height": 48},
+            padding="md",
+        ),
+    ],
 )
 
 
@@ -114,6 +129,27 @@ def toggle_color_scheme(n_clicks, current):
     new_scheme = "dark" if current != "dark" else "light"
     icon = "tabler:sun" if new_scheme == "dark" else "tabler:moon"
     return new_scheme, icon
+
+
+_ACTIVE_GRADIENT = {"from": "blue", "to": "green", "deg": 45}
+
+
+@callback(
+    Output("nav-stays-btn", "variant"),
+    Output("nav-stays-btn", "gradient"),
+    Output("nav-host-btn", "variant"),
+    Output("nav-host-btn", "gradient"),
+    Input("roamly-url", "pathname"),
+)
+def _highlight_active_nav(pathname):
+    # /listing/<id> counts as "Stays" too -- it's reached by browsing from
+    # there, not a section of its own.
+    stays_active = pathname == "/" or (pathname or "").startswith("/listing/")
+    host_active = pathname == "/host"
+    return (
+        "gradient" if stays_active else "subtle", _ACTIVE_GRADIENT,
+        "gradient" if host_active else "subtle", _ACTIVE_GRADIENT,
+    )
 
 
 if __name__ == "__main__":

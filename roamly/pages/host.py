@@ -11,10 +11,10 @@ dash.register_page(__name__, path="/host", title="Roamly - Host dashboard")
 
 MONTHS = ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"]
 
-COLORS = ["#4c6ef5", "#12b886", "#f59f00", "#e64980"]
+COLORS = ["#2f9e44", "#12b886", "#f59f00", "#e64980"]
 
 
-def summary_card(icon, label, value, color="indigo"):
+def summary_card(icon, label, value, color="green"):
     return dmc.Card(
         dmc.Group(
             [
