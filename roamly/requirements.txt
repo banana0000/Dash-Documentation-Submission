@@ -1,0 +1,14 @@
+# Roamly -- standalone requirements for deploying this app on its own
+# (Render, or `pip install -r roamly/requirements.txt` anywhere else). The
+# main repo's own requirements.txt already includes these too, since Roamly
+# also runs embedded in this repo's dev environment -- this file exists so
+# Roamly can be deployed independently, without installing the rest of the
+# site's dependencies it doesn't use.
+dash~=4.4.1
+dash-mantine-components>=2.8.0
+dash-iconify>=0.1.2
+plotly>=6.9.0
+dash_leaflet2>=0.2.2
+dash_image_gallery>=0.0.1
+dash_mui_charts>=1.4.0
+gunicorn>=23.0.0

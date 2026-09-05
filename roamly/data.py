@@ -76,31 +76,6 @@ LISTINGS = {
         "host": {"name": "Marco Ibáñez", "since": 2018, "listings": 2},
         "views_last_30d": [20, 24, 22, 29, 26, 33, 30, 38, 35, 44, 40, 52],
     },
-    "glenmore-highland-cottage": {
-        "id": "glenmore-highland-cottage",
-        "title": "Glenmore Highland Cottage",
-        "location": "Cairngorms, Scottish Highlands",
-        "coords": [57.0985, -3.8317],
-        "price": 210,
-        "price_unit": "night",
-        "rating": 4.89,
-        "reviews": 156,
-        "beds": 3,
-        "baths": 1,
-        "guests": 5,
-        "summary": "A red timber croft cottage on a wildflower hillside, with a wood-burning "
-                   "stone fireplace inside and open moorland views over the Cairngorms in "
-                   "every direction.",
-        "amenities": ["Wifi", "Wood stove", "Free parking", "Garden", "Mountain views"],
-        "cover_image": "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=800&q=80",
-        "gallery": [
-            "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1696814543693-31fcf942ccb7?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1727706572437-4fcda0cbd66f?auto=format&fit=crop&w=800&q=80",
-        ],
-        "host": {"name": "Fiona MacLeod", "since": 2020, "listings": 1},
-        "views_last_30d": [15, 19, 17, 23, 21, 26, 24, 30, 27, 34, 31, 39],
-    },
 }
 
 

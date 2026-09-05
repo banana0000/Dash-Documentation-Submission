@@ -29,7 +29,13 @@ app = Dash(
     use_pages=True,
     pages_folder="pages",
     suppress_callback_exceptions=True,
-    external_stylesheets=[dmc.styles.ALL],
+    external_stylesheets=[
+        dmc.styles.ALL,
+        # Baloo 2 -- a rounded, friendly display face for the "Roamly"
+        # wordmark only (applied via `ff=` on that one dmc.Text below), not
+        # the whole app's body font.
+        "https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&display=swap",
+    ],
     meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
 )
 app.title = "Roamly - Find your next stay"
@@ -47,7 +53,8 @@ navbar = dmc.AppShellHeader(
                                 size=38, radius="xl", variant="filled", color="green",
                             ),
                             dmc.Text(
-                                "Roamly", fw=700, size="lg",
+                                "Roamly", fw=700, size="xl",
+                                ff="'Baloo 2', cursive",
                                 variant="gradient",
                                 gradient={"from": "blue", "to": "green", "deg": 45},
                             ),

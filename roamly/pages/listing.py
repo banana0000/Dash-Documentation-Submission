@@ -1,7 +1,7 @@
 # pages/listing.py
 """Listing detail — 360 tour, gallery, map, and booking summary."""
 import dash
-from dash import html
+from dash import html, callback, Input, Output
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import dash_leaflet2 as dl
@@ -10,6 +10,13 @@ import dash_image_gallery as dig
 from data import get_listing
 
 dash.register_page(__name__, path_template="/listing/<listing_id>", title="Roamly - Listing")
+
+# Esri's free, no-API-key-required basemap tiles -- note the {z}/{y}/{x}
+# order (Esri's own convention, the reverse of OSM/Carto's {z}/{x}/{y}) and
+# no {s} subdomain placeholder (a single server, no subdomain rotation).
+_LIGHT_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+_DARK_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+_TILE_ATTRIBUTION = "Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors, GIS User Community"
 
 
 def not_found():
@@ -64,14 +71,15 @@ def layout(listing_id=None, **kwargs):
             dl.Map(
                 [
                     dl.TileLayer(
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                        attribution="© OpenStreetMap contributors",
+                        id="listing-map-tiles",
+                        url=_LIGHT_TILES,
+                        attribution=_TILE_ATTRIBUTION,
                     ),
                     dl.Marker(
                         position=listing["coords"],
                         popup=listing["title"],
                         iconify="tabler:map-pin-filled",
-                        iconColor="#2f9e44",
+                        iconColor="#15aabf",
                         iconSize=32,
                     ),
                     # dash_leaflet2's own draw/edit toolbar (2plot.ai) -- a
@@ -181,3 +189,11 @@ def layout(listing_id=None, **kwargs):
         ],
         size="lg", py="md",
     )
+
+
+@callback(
+    Output("listing-map-tiles", "url"),
+    Input("mantine-provider", "forceColorScheme"),
+)
+def _tile_layer_for_scheme(scheme):
+    return _DARK_TILES if scheme == "dark" else _LIGHT_TILES

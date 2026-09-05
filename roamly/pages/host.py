@@ -87,6 +87,16 @@ def layout():
         for i, listing in enumerate(listings)
     ]
 
+    # Flag the single tallest bar across the whole chart -- whichever
+    # listing/month combination peaked -- with a reference line and label
+    # rather than singling out one series' own line, since the max could
+    # belong to any of the four.
+    peak_month_index = max(
+        range(len(MONTHS)),
+        key=lambda m: max(series["data"][m] for series in trend_series),
+    )
+    peak_value = max(series["data"][peak_month_index] for series in trend_series)
+
     return dmc.Container(
         [
             dmc.Stack(
@@ -111,9 +121,18 @@ def layout():
                     dmc.Text("Views over the last 12 months", fw=600, mb="sm"),
                     dmuic.BarChart(
                         series=trend_series,
-                        xAxis=[{"scaleType": "band", "data": MONTHS}],
+                        xAxis=[{"scaleType": "band", "data": MONTHS, "barGapRatio": 0}],
                         height=320,
                         colors=COLORS,
+                        borderRadius=8,
+                        referenceLines=[
+                            {
+                                "y": peak_value,
+                                "label": f"Peak: {peak_value} views ({MONTHS[peak_month_index]})",
+                                "labelAlign": "end",
+                                "lineStyle": {"stroke": "#495057", "strokeDasharray": "4 4"},
+                            },
+                        ],
                     ),
                 ],
                 withBorder=True, mb="lg",

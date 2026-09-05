@@ -23,7 +23,7 @@ def overview_map(listings):
             lon=[l["coords"][1] for l in listings],
             text=[f"{l['title']} — ${l['price']}/{l['price_unit']}" for l in listings],
             mode="markers",
-            marker=dict(size=12, color="#2f9e44", line=dict(width=1, color="white")),
+            marker=dict(size=12, color="#15aabf", line=dict(width=1, color="white")),
             hoverinfo="text",
         )
     )
@@ -34,16 +34,20 @@ def overview_map(listings):
         showcountries=True, countrycolor="#adb5bd",
         showlakes=False,
         bgcolor="rgba(0,0,0,0)",
-        # Mercator's own aspect ratio is a full world at 2:1 (width:height)
-        # -- cropping the poles (nothing is ever listed up there anyway)
-        # trims the height needed for the same 360° of width, so the map
-        # actually reads as "wide" in this card instead of a square with
-        # empty margins either side.
-        lataxis_range=[-60, 80],
+        # Mercator preserves true proportions, so at a fixed height the
+        # rendered width is whatever the chosen latitude span works out to
+        # -- narrower than this card (a "lg" container, ~1100px) at a wide
+        # range, leaving big empty margins either side instead of filling
+        # the card. -35/45 comfortably clears the 3 listings (Chile's -23°
+        # to Utah's 37°) and, at 360° of longitude, now works out *wider*
+        # than the card -- so Plotly fits it to the card's width instead
+        # (trading unused top/bottom margin for full-width, which is the
+        # dimension that was actually asked for).
+        lataxis_range=[-35, 45],
     )
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
-        height=320,
+        height=380,
         paper_bgcolor="rgba(0,0,0,0)",
     )
 

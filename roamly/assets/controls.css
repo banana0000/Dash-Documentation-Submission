@@ -17,24 +17,33 @@
    blue -- not recolored here, unlike the other controls on this page. */
 
 /* dash_image_gallery's prev/next arrows and play/fullscreen icons (SVGs use
-   fill: currentColor, so `color` alone recolors them) -- green here rather
-   than the teal above. */
+   fill: currentColor, so `color` alone recolors them). */
 .image-gallery-icon {
-    color: #2f9e44 !important;
+    color: #ffffff !important;
 }
 .image-gallery-icon:hover {
-    color: #237a37 !important;
+    color: #e9ecef !important;
 }
 
 /* Clicking into the gallery focuses the slide/image/icon, which shows the
-   browser's default blue focus ring -- green instead, to match. */
+   browser's own default blue focus ring -- white instead. `outline-color`
+   alone wasn't enough: the browser's default only sets a color, and
+   `outline-style` here computed to "none" until given an explicit style/
+   width too, so the color rule never actually painted anything. */
 .image-gallery-image:focus,
 .image-gallery-image:focus-visible,
 .image-gallery-slide:focus,
 .image-gallery-slide:focus-visible,
 .image-gallery-icon:focus,
 .image-gallery-icon:focus-visible {
-    outline-color: #2f9e44 !important;
+    outline: 3px solid #ffffff !important;
+    outline-offset: -3px;
+}
+
+/* The selected thumbnail (bottom strip) gets a gray border. */
+.image-gallery-thumbnail.active .image-gallery-thumbnail-image {
+    border: 2px solid gray;
+    border-radius: var(--mantine-radius-md, 8px);
 }
 
 /* dash_image_gallery's own CSS sets object-fit: contain (loaded after this
