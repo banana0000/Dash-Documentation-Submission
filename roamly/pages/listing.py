@@ -11,16 +11,15 @@ from data import get_listing
 
 dash.register_page(__name__, path_template="/listing/<listing_id>", title="Roamly - Listing")
 
-# A real street map (roads, labels, buildings) rather than the blank
-# Light/Dark Gray Canvas basemaps used before -- Esri's own street map for
-# light mode ({z}/{y}/{x} order, its own convention, the reverse of
-# OSM/Carto's {z}/{x}/{y}); Esri has no dark equivalent, so dark mode falls
-# back to CartoDB's dark_all, which is a genuine dark *street* map (roads
-# and labels), not the abstract dark gray canvas.
+# Esri for both modes, kept as one provider rather than mixing in CartoDB
+# for dark -- Esri has no dark *street* map, so dark mode is its Dark Gray
+# Canvas (still Esri's own, just more muted/abstract than the light mode's
+# full street map). {z}/{y}/{x} order is Esri's own convention, the
+# reverse of OSM/Carto's {z}/{x}/{y}.
 _LIGHT_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
-_DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+_DARK_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
 _LIGHT_ATTRIBUTION = "Tiles © Esri — Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, GIS User Community"
-_DARK_ATTRIBUTION = "© OpenStreetMap contributors, © CARTO"
+_DARK_ATTRIBUTION = "Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors, GIS User Community"
 
 
 def not_found():

@@ -22,16 +22,15 @@ register_page(
 
 LLMS_DOC = f"# {NAME}\n\n> {DESCRIPTION}\n"
 
-# A real street map (roads, labels, buildings) rather than the blank
-# Light/Dark Gray Canvas basemaps used before -- Esri's own street map for
-# light mode ({z}/{y}/{x} order, its own convention, the reverse of
-# OSM/Carto's {z}/{x}/{y}); Esri has no dark equivalent, so dark mode falls
-# back to CartoDB's dark_all, which is a genuine dark *street* map (roads
-# and labels), not the abstract dark gray canvas.
+# Esri for both modes, kept as one provider rather than mixing in CartoDB
+# for dark -- Esri has no dark *street* map, so dark mode is its Dark Gray
+# Canvas (still Esri's own, just more muted/abstract than the light mode's
+# full street map). {z}/{y}/{x} order is Esri's own convention, the
+# reverse of OSM/Carto's {z}/{x}/{y}.
 _LIGHT_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
-_DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+_DARK_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
 _LIGHT_ATTRIBUTION = "Tiles © Esri — Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, GIS User Community"
-_DARK_ATTRIBUTION = "© OpenStreetMap contributors, © CARTO"
+_DARK_ATTRIBUTION = "Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors, GIS User Community"
 
 # Every id on this page carries this prefix -- Roamly's standalone version
 # (roamly/pages/listing.py) uses the bare names, which would collide with
@@ -48,10 +47,32 @@ def _id(name):
 def roamly_nav():
     return dmc.Group(
         [
-            dmc.Anchor(dmc.Button("Stays", variant="light", size="xs"), href="/roamly"),
-            dmc.Anchor(dmc.Button("Host dashboard", variant="light", size="xs"), href="/roamly/host"),
+            dmc.Anchor(
+                dmc.Group(
+                    [
+                        dmc.ThemeIcon(
+                            DashIconify(icon="tabler:map-2", width=16),
+                            size=26, radius="xl", variant="filled", color="green",
+                        ),
+                        dmc.Text(
+                            "Roamly", fw=700, size="md",
+                            variant="gradient",
+                            gradient={"from": "blue", "to": "green", "deg": 45},
+                        ),
+                    ],
+                    gap=6,
+                ),
+                href="/roamly", underline=False,
+            ),
+            dmc.Group(
+                [
+                    dmc.Anchor(dmc.Button("Stays", variant="light", size="xs"), href="/roamly"),
+                    dmc.Anchor(dmc.Button("Host dashboard", variant="light", size="xs"), href="/roamly/host"),
+                ],
+                gap="xs",
+            ),
         ],
-        gap="xs", mb="md",
+        justify="space-between", mb="md",
     )
 
 

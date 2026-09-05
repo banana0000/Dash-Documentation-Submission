@@ -54,8 +54,8 @@ LISTINGS = {
     },
     "atacama-mountain-retreat": {
         "id": "atacama-mountain-retreat",
-        "title": "Cerro Toco Mountain Retreat",
-        "location": "High Desert, Atacama Foothills, Chile",
+        "title": "Cerro Toco Mountain",
+        "location": "Atacama Desert, Chile",
         "coords": [-22.9587, -67.7797],
         "price": 268,
         "price_unit": "night",
