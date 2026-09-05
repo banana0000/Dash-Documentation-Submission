@@ -197,6 +197,15 @@ def build_flow_playground(height="70vh", include_layout_picker=True):
             dmc.Button(
                 "Export PNG", id=_id("export-png-btn"), n_clicks=0, variant="outline", color="grape", fullWidth=True,
             ),
+            dmc.Button(
+                "New diagram", id=_id("new-diagram-btn"), n_clicks=0, variant="outline", fullWidth=True,
+            ),
+            dmc.Button(
+                "Reset", id=_id("reset-flow-btn"), n_clicks=0, variant="subtle", color="gray", fullWidth=True,
+            ),
+            dmc.Switch(
+                id=_id("animated-toggle"), label="Animated edges", checked=True, size="sm",
+            ),
             *([build_layout_picker(w="100%")] if include_layout_picker else []),
             dmc.Select(
                 id=_id("preset-picker"),
@@ -304,11 +313,13 @@ def _start_editing_label(node):
 
 @callback(
     Output(_id("flow"), "nodes", allow_duplicate=True),
-    Output(_id("flow"), "edges"),
+    Output(_id("flow"), "edges", allow_duplicate=True),
     Output(_id("node-counter"), "data"),
     Input(_id("preset-picker"), "value"),
     Input(_id("add-node-btn"), "n_clicks"),
     Input(_id("save-label-btn"), "n_clicks"),
+    Input(_id("reset-flow-btn"), "n_clicks"),
+    Input(_id("new-diagram-btn"), "n_clicks"),
     State(_id("flow"), "nodes"),
     State(_id("flow"), "edges"),
     State(_id("node-counter"), "data"),
@@ -316,12 +327,35 @@ def _start_editing_label(node):
     State(_id("editing-node-id"), "data"),
     prevent_initial_call=True,
 )
-def _update_flow(preset_key, n_clicks, save_clicks, current_nodes, current_edges, counter, new_label, editing_id):
+def _update_flow(preset_key, n_clicks, save_clicks, reset_clicks, new_clicks, current_nodes, current_edges, counter, new_label, editing_id):
     triggered = dash.ctx.triggered_id
 
-    if triggered == _id("preset-picker"):
+    if triggered in (_id("preset-picker"), _id("reset-flow-btn")):
+        # Reset re-loads the currently-selected preset from scratch,
+        # discarding any Add-node/label/color edits -- same data as
+        # switching presets, just without changing which one is picked.
         preset = PRESETS[preset_key]
         return preset["nodes"], preset["edges"], 0
+
+    if triggered == _id("new-diagram-btn"):
+        # A blank canvas, not tied to any preset -- unstyled default/input/
+        # output node types (no custom colors/rounding) rather than the
+        # presets' own look, so it reads as a plain starting point to build
+        # up from. The preset picker's own selection is left untouched (it
+        # still shows whichever preset was last loaded, since this diagram
+        # isn't any of them any more).
+        return (
+            [
+                {"id": "1", "type": "input", "data": {"label": "Start"}, "position": {"x": 100, "y": 100}},
+                {"id": "2", "type": "default", "data": {"label": "Process"}, "position": {"x": 100, "y": 240}},
+                {"id": "3", "type": "output", "data": {"label": "End"}, "position": {"x": 100, "y": 380}},
+            ],
+            [
+                {"id": "e1-2", "source": "1", "target": "2", "animated": True},
+                {"id": "e2-3", "source": "2", "target": "3"},
+            ],
+            0,
+        )
 
     if triggered == _id("save-label-btn"):
         if not editing_id or not new_label or not current_nodes:
@@ -363,6 +397,23 @@ def _update_flow(preset_key, n_clicks, save_clicks, current_nodes, current_edges
         return updated_nodes + [new_node], current_edges + [new_edge], counter
 
     return no_update, no_update, no_update
+
+
+@callback(
+    Output(_id("flow"), "edges", allow_duplicate=True),
+    Input(_id("animated-toggle"), "checked"),
+    State(_id("flow"), "edges"),
+    prevent_initial_call=True,
+)
+def _toggle_edge_animation(animated, current_edges):
+    if not current_edges:
+        return no_update
+    if animated:
+        return [_animate_edge(e) for e in current_edges]
+    # Drop the "animatedSvg" edge type/data (the travelling dot) but keep
+    # everything else -- the dashed-line "animated" flag and each edge's
+    # own stroke color/label stay put, this only undoes _animate_edge.
+    return [{k: v for k, v in e.items() if k not in ("type", "data")} for e in current_edges]
 
 
 @callback(

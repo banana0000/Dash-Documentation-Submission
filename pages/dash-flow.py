@@ -76,12 +76,11 @@ _copy_button = dmc.Tooltip(
 # the same for width.
 _TITLE_ROW_HEIGHT = 40
 # AppShellMain's own padding="xl" (top+bottom, from components/appshell.py)
-# plus the controls row (Select/Add node/label editor/Save/Export) and its
-# gap -- measured empirically, not derived from Mantine's spacing tokens.
-# Container's own py went to 0 (was "sm"), which freed up more of that
-# budget for the canvas -- this dropped accordingly, re-measure if either
-# changes again.
-_CHROME_HEIGHT = 110
+# -- the controls (Add node/label editor/Save/Export/Reset/...) live in
+# their own sidebar beside the canvas now, not a row above it, so this only
+# has to cover that padding. Measured empirically, not derived from
+# Mantine's spacing tokens; re-measure if the surrounding chrome changes.
+_CHROME_HEIGHT = 70
 
 layout = dmc.Container(
     [
