@@ -10,6 +10,14 @@ excluded_links = [
     "/dash-iconify",
     "/migration",
     "/learning-resources",
+    # Roamly's own sub-pages -- reached from /roamly's internal Stays/Host
+    # dashboard switcher, not this site's own nav (which only lists /roamly
+    # itself, under Apps).
+    "/roamly/host",
+    # path_template pages register their "path" with placeholders resolved
+    # to "none" (dash's own doing, not a bug here) -- this is the literal
+    # value dash.page_registry stores for /roamly/listing/<listing_id>.
+    "/roamly/listing/none",
 ]
 
 # Pages that are tools/demos rather than documentation — listed under their

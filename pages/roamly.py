@@ -1,14 +1,18 @@
+from pathlib import Path
+
 import dash_mantine_components as dmc
 from dash import register_page
 from dash_iconify import DashIconify
+import dash_leaflet2 as dl
 
 from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+from roamly.data import list_listings
 
 NAME = "Roamly *"
 DESCRIPTION = (
     "A house-only stay/property booking platform mockup -- a listings grid, an "
     "individual stay page with an image gallery, and a host dashboard. Built on "
-    "Dash, Dash Mantine Components and dash-leaflet."
+    "Dash, Dash Mantine Components and dash-leaflet2."
 )
 
 register_page(
@@ -21,60 +25,146 @@ register_page(
     icon="tabler:map-2",
 )
 
-# Unlike the Dash Flow / Excalidraw apps, Roamly is not a component embedded
-# into this site's own multi-page app -- it's a full standalone Dash app
-# (own AppShell, own theme, own page router, own dark-mode toggle) living in
-# roamly/ at the repo root. Running it inline here would collide with this
-# site's own ids (e.g. both apps have a "color-scheme-toggle"), so this page
-# is a link-out card rather than an embed, the same way the navbar's "Apps"
-# section opens this page itself in a new tab.
-ROAMLY_URL = "http://localhost:8870/"
-
 # dash-improve-my-llms picks this up automatically and serves it verbatim at
-# /roamly/llms.txt -- see pages/excalidraw.py for the same pattern. Roamly's
-# own source lives outside this app (roamly/ at the repo root), so this is a
-# pointer to it rather than embedded source.
+# /roamly/llms.txt -- see pages/excalidraw.py for the same pattern.
 LLMS_DOC = (
     f"# {NAME}\n\n> {DESCRIPTION}\n\n"
-    "Roamly is a standalone Dash app, not a page embedded in this site -- "
-    f"its own AppShell, theme and page router run separately at {ROAMLY_URL} "
-    "(source: roamly/ at this repo's root, started with `python roamly/app.py`)."
+    "Embedded here at /roamly, /roamly/host and /roamly/listing/<id> -- the "
+    "same app also runs standalone (own AppShell, theme, port) from roamly/ "
+    "at this repo's root, started with `python roamly/app.py`."
 )
+
+
+def roamly_nav():
+    """Roamly's own Stays/Host dashboard switcher, embedded inline in the
+    page instead of living in a second header -- this site's own navbar
+    already owns that role, so Roamly's separate AppShell/header (used by
+    the standalone app in roamly/app.py) isn't part of the embed."""
+    return dmc.Group(
+        [
+            dmc.Anchor(dmc.Button("Stays", variant="light", size="xs"), href="/roamly"),
+            dmc.Anchor(dmc.Button("Host dashboard", variant="light", size="xs"), href="/roamly/host"),
+        ],
+        gap="xs", mb="md",
+    )
+
+
+def overview_map(listings):
+    """All listings on one dash_leaflet2 map -- same tile source as the
+    per-listing page (pages/roamly-listing.py), just one marker per
+    listing instead of one. Unlike a Plotly geo Scattergeo (tried first),
+    a tile map always fills its container's full width regardless of how
+    the listings are spread out geographically -- no aspect-ratio math
+    needed, it just pans/zooms.
+    """
+    lats = [l["coords"][0] for l in listings]
+    lons = [l["coords"][1] for l in listings]
+    center = [sum(lats) / len(lats), sum(lons) / len(lons)]
+
+    return dl.Map(
+        [
+            dl.TileLayer(
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+                attribution="Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors, GIS User Community",
+            ),
+            *[
+                dl.Marker(
+                    position=listing["coords"],
+                    popup=f"{listing['title']} — ${listing['price']}/{listing['price_unit']}",
+                    iconify="tabler:map-pin-filled",
+                    iconColor="#15aabf",
+                    iconSize=32,
+                )
+                for listing in listings
+            ],
+        ],
+        center=center,
+        zoom=3,
+        style={
+            "height": "380px", "width": "100%", "borderRadius": "var(--mantine-radius-md)",
+            "marginTop": "40px", "marginBottom": "var(--mantine-spacing-lg)",
+        },
+    )
+
+
+def listing_card(listing):
+    return dmc.Anchor(
+        dmc.Card(
+            [
+                dmc.CardSection(
+                    dmc.Image(src=listing["cover_image"], h=200, fit="cover"),
+                ),
+                dmc.Group(
+                    [
+                        dmc.Stack(
+                            [
+                                dmc.Text(listing["title"], fw=600, size="md", truncate=True),
+                                dmc.Text(listing["location"], size="sm", c="dimmed"),
+                            ],
+                            gap=2,
+                        ),
+                        dmc.Badge(
+                            f"★ {listing['rating']}",
+                            variant="light",
+                            color="yellow",
+                            leftSection=DashIconify(icon="tabler:star-filled", width=12),
+                        ),
+                    ],
+                    justify="space-between",
+                    align="flex-start",
+                    mt="sm",
+                ),
+                dmc.Group(
+                    [
+                        dmc.Badge(
+                            f"{listing['beds']} beds · {listing['baths']} baths",
+                            variant="light",
+                            color="green",
+                            leftSection=DashIconify(icon="tabler:home", width=12),
+                        ),
+                        dmc.Text(
+                            [
+                                dmc.Text(f"${listing['price']}", span=True, fw=700),
+                                f" / {listing['price_unit']}",
+                            ],
+                            size="sm",
+                        ),
+                    ],
+                    justify="space-between",
+                    mt="xs",
+                ),
+                dmc.Text(
+                    "Click for photos and map",
+                    size="xs", c="dimmed", ta="center", mt="xs",
+                ),
+            ],
+            withBorder=True,
+        ),
+        href=f"/roamly/listing/{listing['id']}",
+        underline=False,
+    )
+
 
 layout = dmc.Container(
     id="m2d-page-roamly",
-    size="sm",
-    py="xl",
-    children=dmc.Stack(
-        [
-            dmc.Group(
-                [
-                    dmc.ThemeIcon(
-                        DashIconify(icon="tabler:map-2", width=22),
-                        size=44, radius="xl", variant="filled", color="green",
-                    ),
-                    dmc.Title(NAME, order=3, className="m2d-heading", style={"margin": 0}),
-                ],
-                gap="sm",
-            ),
-            dmc.Text(DESCRIPTION, c="dimmed"),
-            dmc.Text(
-                "Roamly runs as its own standalone Dash app, so it opens in a "
-                "separate tab and on its own port instead of inside this site.",
-                size="sm",
-            ),
-            dmc.Anchor(
-                dmc.Button(
-                    "Open Roamly",
-                    leftSection=DashIconify(icon="tabler:external-link", width=16),
-                    size="md",
+    children=[
+        roamly_nav(),
+        dmc.Stack(
+            [
+                dmc.Title("Find your next stay", order=1),
+                dmc.Text(
+                    "Browse full houses with real photos, ratings, and maps — no surprises at check-in.",
+                    c="dimmed", size="lg",
                 ),
-                href=ROAMLY_URL,
-                target="_blank",
-                underline=False,
-            ),
-            dmc.Code(f"python roamly/app.py  # serves at {ROAMLY_URL}", block=True),
-        ],
-        gap="md",
-    ),
+            ],
+            gap=4, mb="lg",
+        ),
+        dmc.SimpleGrid(
+            [listing_card(listing) for listing in list_listings()],
+            cols={"base": 1, "sm": 2, "lg": 3},
+            spacing="lg",
+        ),
+        overview_map(list_listings()),
+    ],
+    size="lg", py="md",
 )

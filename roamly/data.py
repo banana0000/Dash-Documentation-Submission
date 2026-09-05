@@ -29,7 +29,7 @@ LISTINGS = {
     },
     "heritage-house-victoria": {
         "id": "heritage-house-victoria",
-        "title": "Phillips-Sale Heritage House",
+        "title": "Sale Heritage House",
         "location": "Victoria, Texas",
         "coords": [28.8053, -96.9997],
         "price": 245,

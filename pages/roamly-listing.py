@@ -1,15 +1,26 @@
-# pages/listing.py
-"""Listing detail — 360 tour, gallery, map, and booking summary."""
-import dash
-from dash import html, callback, Input, Output
 import dash_mantine_components as dmc
+from dash import callback, Input, Output, register_page
 from dash_iconify import DashIconify
 import dash_leaflet2 as dl
 import dash_image_gallery as dig
 
-from data import get_listing
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+from roamly.data import get_listing
 
-dash.register_page(__name__, path_template="/listing/<listing_id>", title="Roamly - Listing")
+NAME = "Roamly: Listing *"
+DESCRIPTION = "A single Roamly stay's detail page, embedded on the main site -- see pages/roamly.py."
+
+register_page(
+    __name__,
+    path_template="/roamly/listing/<listing_id>",
+    name=NAME,
+    title=PAGE_TITLE_PREFIX + NAME,
+    description=DESCRIPTION,
+    image_url=OG_IMAGE_URL,
+    icon="tabler:map-2",
+)
+
+LLMS_DOC = f"# {NAME}\n\n> {DESCRIPTION}\n"
 
 # A real street map (roads, labels, buildings) rather than the blank
 # Light/Dark Gray Canvas basemaps used before -- Esri's own street map for
@@ -22,13 +33,34 @@ _DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 _LIGHT_ATTRIBUTION = "Tiles © Esri — Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, GIS User Community"
 _DARK_ATTRIBUTION = "© OpenStreetMap contributors, © CARTO"
 
+# Every id on this page carries this prefix -- Roamly's standalone version
+# (roamly/pages/listing.py) uses the bare names, which would collide with
+# this site's own ids (e.g. plain "mantine-provider" isn't one here, but a
+# second copy of this page's own ids would be if either page were ever
+# rendered twice) and keeps the two copies' callbacks unambiguous.
+_ID_PREFIX = "rm-listing-"
+
+
+def _id(name):
+    return f"{_ID_PREFIX}{name}"
+
+
+def roamly_nav():
+    return dmc.Group(
+        [
+            dmc.Anchor(dmc.Button("Stays", variant="light", size="xs"), href="/roamly"),
+            dmc.Anchor(dmc.Button("Host dashboard", variant="light", size="xs"), href="/roamly/host"),
+        ],
+        gap="xs", mb="md",
+    )
+
 
 def not_found():
     return dmc.Container(
         dmc.Stack(
             [
                 dmc.Title("Listing not found", order=2),
-                dmc.Anchor(dmc.Button("Back to stays"), href="/"),
+                dmc.Anchor(dmc.Button("Back to stays"), href="/roamly"),
             ],
             align="center", py="xl",
         ),
@@ -56,7 +88,7 @@ def layout(listing_id=None, **kwargs):
         [
             dmc.Text("Photos", fw=600, mb="sm"),
             dig.DashImageGallery(
-                id="listing-gallery",
+                id=_id("gallery"),
                 items=gallery_items,
                 showPlayButton=False,
                 showFullscreenButton=True,
@@ -75,7 +107,7 @@ def layout(listing_id=None, **kwargs):
             dl.Map(
                 [
                     dl.TileLayer(
-                        id="listing-map-tiles",
+                        id=_id("map-tiles"),
                         url=_LIGHT_TILES,
                         attribution=_LIGHT_ATTRIBUTION,
                     ),
@@ -100,9 +132,6 @@ def layout(listing_id=None, **kwargs):
     )
 
     booking_panel = dmc.Card(
-        # justify="space-between" spreads these across the card's full
-        # height (stretched to match gallery_panel next to it) instead of
-        # packing at the top and leaving dead space at the bottom.
         dmc.Stack(
             [
                 dmc.Group(
@@ -126,7 +155,7 @@ def layout(listing_id=None, **kwargs):
                 ),
                 dmc.Divider(),
                 dmc.TimePicker(
-                    id="listing-checkin-time",
+                    id=_id("checkin-time"),
                     label="Check-in time",
                     value="15:00",
                     withDropdown=True,
@@ -164,9 +193,10 @@ def layout(listing_id=None, **kwargs):
 
     return dmc.Container(
         [
+            roamly_nav(),
             dmc.Anchor(
                 dmc.Group([DashIconify(icon="tabler:arrow-left", width=16), dmc.Text("Back to stays", size="sm")], gap=4),
-                href="/", underline=False, c="dimmed", mb="md",
+                href="/roamly", underline=False, c="dimmed", mb="md",
             ),
             dmc.Stack(
                 [
@@ -175,11 +205,6 @@ def layout(listing_id=None, **kwargs):
                 ],
                 gap=2, mb="md",
             ),
-            # The description sits above the gallery, full width -- and the
-            # gallery card is stretch-aligned against the booking card next
-            # to it (which also carries the host info), so the two match
-            # height. The map (its own card, "Location") runs full width
-            # below both.
             dmc.Card(dmc.Text(listing["summary"]), withBorder=True, mb="md"),
             dmc.Grid(
                 [
@@ -196,9 +221,13 @@ def layout(listing_id=None, **kwargs):
 
 
 @callback(
-    Output("listing-map-tiles", "url"),
-    Output("listing-map-tiles", "attribution"),
-    Input("mantine-provider", "forceColorScheme"),
+    Output(_id("map-tiles"), "url"),
+    Output(_id("map-tiles"), "attribution"),
+    # This site's own MantineProvider id (components/appshell.py), not
+    # Roamly's standalone "mantine-provider" -- the embed follows this
+    # site's dark-mode toggle, since Roamly's own header/toggle aren't part
+    # of the embed.
+    Input("m2d-mantine-provider", "forceColorScheme"),
 )
 def _tile_layer_for_scheme(scheme):
     if scheme == "dark":

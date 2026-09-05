@@ -1,10 +1,10 @@
 # pages/home.py
 """Stays — browse listings."""
 import dash
-from dash import dcc, html
+from dash import html
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
-import plotly.graph_objects as go
+import dash_leaflet2 as dl
 
 from data import list_listings
 
@@ -12,49 +12,40 @@ dash.register_page(__name__, path="/", title="Roamly - Stays")
 
 
 def overview_map(listings):
-    """All listings on one wide Mercator map -- Plotly's own Scattergeo,
-    rather than dash_leaflet2's flat 2D Map (used on the per-listing page,
-    pages/listing.py). Draggable to pan, scroll to zoom, same as any other
-    dcc.Graph.
+    """All listings on one dash_leaflet2 map -- same tile source as the
+    per-listing page (pages/listing.py), just one marker per listing
+    instead of one. Unlike a Plotly geo Scattergeo (tried first), a tile
+    map always fills its container's full width regardless of how the
+    listings are spread out geographically -- no aspect-ratio math needed,
+    it just pans/zooms.
     """
-    fig = go.Figure(
-        go.Scattergeo(
-            lat=[l["coords"][0] for l in listings],
-            lon=[l["coords"][1] for l in listings],
-            text=[f"{l['title']} — ${l['price']}/{l['price_unit']}" for l in listings],
-            mode="markers",
-            marker=dict(size=12, color="#15aabf", line=dict(width=1, color="white")),
-            hoverinfo="text",
-        )
-    )
-    fig.update_geos(
-        projection_type="mercator",
-        showland=True, landcolor="#e9ecef",
-        showocean=True, oceancolor="#d0ebff",
-        showcountries=True, countrycolor="#adb5bd",
-        showlakes=False,
-        bgcolor="rgba(0,0,0,0)",
-        # Mercator preserves true proportions, so at a fixed height the
-        # rendered width is whatever the chosen latitude span works out to
-        # -- narrower than this card (a "lg" container, ~1100px) at a wide
-        # range, leaving big empty margins either side instead of filling
-        # the card. -35/45 comfortably clears the 3 listings (Chile's -23°
-        # to Utah's 37°) and, at 360° of longitude, now works out *wider*
-        # than the card -- so Plotly fits it to the card's width instead
-        # (trading unused top/bottom margin for full-width, which is the
-        # dimension that was actually asked for).
-        lataxis_range=[-35, 45],
-    )
-    fig.update_layout(
-        margin=dict(l=0, r=0, t=0, b=0),
-        height=380,
-        paper_bgcolor="rgba(0,0,0,0)",
-    )
+    lats = [l["coords"][0] for l in listings]
+    lons = [l["coords"][1] for l in listings]
+    center = [sum(lats) / len(lats), sum(lons) / len(lons)]
 
-    return dcc.Graph(
-        figure=fig,
-        config={"displayModeBar": False},
-        style={"height": "320px", "marginTop": "40px", "marginBottom": "var(--mantine-spacing-lg)"},
+    return dl.Map(
+        [
+            dl.TileLayer(
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+                attribution="Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors, GIS User Community",
+            ),
+            *[
+                dl.Marker(
+                    position=listing["coords"],
+                    popup=f"{listing['title']} — ${listing['price']}/{listing['price_unit']}",
+                    iconify="tabler:map-pin-filled",
+                    iconColor="#15aabf",
+                    iconSize=32,
+                )
+                for listing in listings
+            ],
+        ],
+        center=center,
+        zoom=3,
+        style={
+            "height": "380px", "width": "100%", "borderRadius": "var(--mantine-radius-md)",
+            "marginTop": "40px", "marginBottom": "var(--mantine-spacing-lg)",
+        },
     )
 
 
