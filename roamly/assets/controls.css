@@ -76,6 +76,12 @@ html[data-mantine-color-scheme="dark"] .MuiChartsTooltip-cell {
     color: #1a1b1e !important;
 }
 
+/* The bar chart's "Peak: ..." reference-line label -- an SVG <text>, so
+   `fill` (matching the axis ticks above), not `color`. */
+html[data-mantine-color-scheme="dark"] .MuiChartsReferenceLine-label {
+    fill: #ffffff !important;
+}
+
 /* The legend (series names above the bar chart) reads white rather than
    the light gray above. Its root is a plain <ul> (MuiChartsLegend's Root
    slot), not SVG, so this is a `color` rule, not `fill`. */

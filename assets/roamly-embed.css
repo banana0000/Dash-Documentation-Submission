@@ -1,0 +1,34 @@
+/* Styling for the embedded Roamly pages (pages/roamly.py, roamly-host.py,
+   roamly-listing.py) that dmc props alone can't reach -- dash_mui_charts
+   (MUI X-Charts underneath) has its own theme, separate from Mantine's, so
+   its axis/legend text stays MUI's default near-black even when this
+   site's own dark mode is on, going near-invisible on a dark background.
+   Scoped to dark mode via the attribute Mantine sets on <html>, so light
+   mode is untouched. Same rules as roamly/assets/controls.css (the
+   standalone app's own copy) -- that file isn't loaded here, since Dash
+   only auto-serves the running app's own assets/ folder. */
+html[data-mantine-color-scheme="dark"] .MuiChartsAxis-tickLabel,
+html[data-mantine-color-scheme="dark"] .MuiChartsAxis-label {
+    fill: #ced4da !important;
+    color: #ced4da !important;
+}
+
+/* The legend (series names above the bar chart) reads white rather than
+   the light gray above. Its root is a plain <ul> (MuiChartsLegend's Root
+   slot), not SVG, so this is a `color` rule, not `fill`. */
+html[data-mantine-color-scheme="dark"] .MuiChartsLegend-label {
+    color: #ffffff !important;
+}
+
+/* The tooltip's own popup keeps MUI's light background regardless of the
+   page's dark mode (a separate, un-synced theme), so its text stays dark
+   rather than following the light-gray treatment above. */
+html[data-mantine-color-scheme="dark"] .MuiChartsTooltip-cell {
+    color: #1a1b1e !important;
+}
+
+/* The bar chart's "Peak: ..." reference-line label -- an SVG <text>, so
+   `fill` (matching the axis ticks above), not `color`. */
+html[data-mantine-color-scheme="dark"] .MuiChartsReferenceLine-label {
+    fill: #ffffff !important;
+}

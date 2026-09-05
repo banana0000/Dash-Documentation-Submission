@@ -1,52 +1,68 @@
 # pages/home.py
 """Stays — browse listings."""
 import dash
-from dash import html
+from dash import callback, dcc, html, Input, Output
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
-import dash_leaflet2 as dl
+import plotly.graph_objects as go
 
 from data import list_listings
 
 dash.register_page(__name__, path="/", title="Roamly - Stays")
 
 
-def overview_map(listings):
-    """All listings on one dash_leaflet2 map -- same tile source as the
-    per-listing page (pages/listing.py), just one marker per listing
-    instead of one. Unlike a Plotly geo Scattergeo (tried first), a tile
-    map always fills its container's full width regardless of how the
-    listings are spread out geographically -- no aspect-ratio math needed,
-    it just pans/zooms.
-    """
-    lats = [l["coords"][0] for l in listings]
-    lons = [l["coords"][1] for l in listings]
-    center = [sum(lats) / len(lats), sum(lons) / len(lons)]
+def _build_globe_figure(listings, dark=False):
+    center_lat = sum(l["coords"][0] for l in listings) / len(listings)
+    center_lon = sum(l["coords"][1] for l in listings) / len(listings)
 
-    return dl.Map(
-        [
-            dl.TileLayer(
-                url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
-                attribution="Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors, GIS User Community",
-            ),
-            *[
-                dl.Marker(
-                    position=listing["coords"],
-                    popup=f"{listing['title']} — ${listing['price']}/{listing['price_unit']}",
-                    iconify="tabler:map-pin-filled",
-                    iconColor="#15aabf",
-                    iconSize=32,
-                )
-                for listing in listings
-            ],
-        ],
-        center=center,
-        zoom=3,
-        style={
-            "height": "380px", "width": "100%", "borderRadius": "var(--mantine-radius-md)",
-            "marginTop": "40px", "marginBottom": "var(--mantine-spacing-lg)",
-        },
+    fig = go.Figure(
+        go.Scattergeo(
+            lat=[l["coords"][0] for l in listings],
+            lon=[l["coords"][1] for l in listings],
+            text=[f"{l['title']} — ${l['price']}/{l['price_unit']}" for l in listings],
+            mode="markers",
+            marker=dict(size=12, color="#15aabf", line=dict(width=1, color="white")),
+            hoverinfo="text",
+        )
     )
+    fig.update_geos(
+        projection_type="orthographic",
+        projection_rotation=dict(lon=center_lon, lat=center_lat),
+        showland=True, landcolor="#343a40" if dark else "#e9ecef",
+        showocean=True, oceancolor="#1a1b1e" if dark else "#d0ebff",
+        showcountries=True, countrycolor="#495057" if dark else "#adb5bd",
+        showlakes=False,
+        bgcolor="rgba(0,0,0,0)",
+    )
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=380,
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+    return fig
+
+
+def overview_map(listings):
+    """All listings on one 3D-look globe -- Plotly's own Scattergeo with an
+    orthographic projection, rather than dash_leaflet2's flat 2D Map (used
+    on the per-listing page, pages/listing.py). Draggable to rotate, scroll
+    to zoom, same as any other dcc.Graph. Its land/ocean colors follow this
+    app's own dark mode via the callback below.
+    """
+    return dcc.Graph(
+        id="roamly-globe",
+        figure=_build_globe_figure(listings),
+        config={"displayModeBar": False},
+        style={"height": "380px", "marginTop": "40px", "marginBottom": "var(--mantine-spacing-lg)"},
+    )
+
+
+@callback(
+    Output("roamly-globe", "figure"),
+    Input("mantine-provider", "forceColorScheme"),
+)
+def _globe_for_scheme(scheme):
+    return _build_globe_figure(list_listings(), dark=(scheme == "dark"))
 
 
 def listing_card(listing):

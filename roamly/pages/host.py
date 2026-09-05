@@ -138,9 +138,10 @@ def layout():
                 withBorder=True, mb="lg",
             ),
             dmc.Text("Your listings", fw=600, mb="sm"),
-            dmc.Stack(
+            dmc.SimpleGrid(
                 [listing_row(listing, COLORS[i % len(COLORS)]) for i, listing in enumerate(listings)],
-                gap="sm",
+                cols={"base": 1, "md": 3},
+                spacing="sm",
             ),
         ],
         size="lg", py="md",

@@ -44,6 +44,9 @@ def _id(name):
     return f"{_ID_PREFIX}{name}"
 
 
+_ACTIVE_GRADIENT = {"from": "blue", "to": "green", "deg": 45}
+
+
 def roamly_nav():
     return dmc.Group(
         [
@@ -66,8 +69,14 @@ def roamly_nav():
             ),
             dmc.Group(
                 [
-                    dmc.Anchor(dmc.Button("Stays", variant="light", size="xs"), href="/roamly"),
-                    dmc.Anchor(dmc.Button("Host dashboard", variant="light", size="xs"), href="/roamly/host"),
+                    # A listing page is reached by browsing from Stays, so
+                    # that's the tab that reads active here -- there's no
+                    # third "Listing" tab of its own.
+                    dmc.Anchor(
+                        dmc.Button("Stays", size="xs", radius="xl", variant="gradient", gradient=_ACTIVE_GRADIENT),
+                        href="/roamly",
+                    ),
+                    dmc.Anchor(dmc.Button("Host dashboard", variant="light", size="xs", radius="xl"), href="/roamly/host"),
                 ],
                 gap="xs",
             ),

@@ -25,13 +25,49 @@ MONTHS = ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", 
 COLORS = ["#2f9e44", "#12b886", "#f59f00", "#e64980"]
 
 
-def roamly_nav():
+_ACTIVE_GRADIENT = {"from": "blue", "to": "green", "deg": 45}
+
+
+def roamly_logo():
+    return dmc.Anchor(
+        dmc.Group(
+            [
+                dmc.ThemeIcon(
+                    DashIconify(icon="tabler:map-2", width=16),
+                    size=26, radius="xl", variant="filled", color="green",
+                ),
+                dmc.Text(
+                    "Roamly", fw=700, size="md",
+                    variant="gradient", gradient=_ACTIVE_GRADIENT,
+                ),
+            ],
+            gap=6,
+        ),
+        href="/roamly", underline=False,
+    )
+
+
+def roamly_nav(active):
+    def tab(label, href, key):
+        is_active = active == key
+        return dmc.Anchor(
+            dmc.Button(
+                label, size="xs", radius="xl",
+                variant="gradient" if is_active else "light",
+                gradient=_ACTIVE_GRADIENT if is_active else None,
+            ),
+            href=href,
+        )
+
     return dmc.Group(
         [
-            dmc.Anchor(dmc.Button("Stays", variant="light", size="xs"), href="/roamly"),
-            dmc.Anchor(dmc.Button("Host dashboard", variant="light", size="xs"), href="/roamly/host"),
+            roamly_logo(),
+            dmc.Group(
+                [tab("Stays", "/roamly", "stays"), tab("Host dashboard", "/roamly/host", "host")],
+                gap="xs",
+            ),
         ],
-        gap="xs", mb="md",
+        justify="space-between", mb="md",
     )
 
 
@@ -116,7 +152,7 @@ def _build_layout():
 
     return dmc.Container(
         [
-            roamly_nav(),
+            roamly_nav("host"),
             dmc.Stack(
                 [
                     dmc.Title("Host dashboard", order=2),
@@ -156,9 +192,10 @@ def _build_layout():
                 withBorder=True, mb="lg",
             ),
             dmc.Text("Your listings", fw=600, mb="sm"),
-            dmc.Stack(
+            dmc.SimpleGrid(
                 [listing_row(listing, COLORS[i % len(COLORS)]) for i, listing in enumerate(listings)],
-                gap="sm",
+                cols={"base": 1, "md": 3},
+                spacing="sm",
             ),
         ],
         size="lg", py="md",
