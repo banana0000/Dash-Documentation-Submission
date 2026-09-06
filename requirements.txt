@@ -62,7 +62,7 @@ python-frontmatter>=1.0.0
 #     pip install -r requirements.txt
 #     pip install --no-deps markdown2dash==0.1.2
 #
-# scripts/dev.sh, the Dockerfile, render.yaml and CI all do exactly that pair.
+# scripts/dev.sh, render.yaml and CI all do exactly that pair.
 # Its real runtime dependencies are listed here instead (dash, dash-iconify
 # and dash-mantine-components are already pinned above):
 docutils!=0.21

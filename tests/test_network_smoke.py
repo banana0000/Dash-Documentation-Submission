@@ -1,9 +1,10 @@
 """Run the network battery against the in-process app.
 
 `scripts/network_smoke.py` only ever executes in two places a developer never
-watches: against the container CI just booted, and against production after a
-deploy. That is exactly the code that rots — a typo in a check turns it into a
-silent pass and the battery keeps reporting green over a broken host.
+watches: against the gunicorn worker CI just booted, and against production
+after a deploy. That is exactly the code that rots — a typo in a check turns
+it into a silent pass and the battery keeps reporting green over a broken
+host.
 
 So it runs here too, with its `fetch` pointed at the test client. Three
 distinct things get proven, and it is worth being explicit about which:
@@ -104,13 +105,3 @@ def test_the_battery_reports_a_failure_rather_than_swallowing_it(wired):
 
     verdicts = {name: verdict for name, verdict, _ in wired._RESULTS}
     assert verdicts.get("llms_txt_identity") == wired.FAIL
-
-
-def test_the_default_base_url_matches_the_container_port(battery):
-    """CI boots the image and runs the battery with no --base-url."""
-    dockerfile = (REPO_ROOT / "Dockerfile").read_text()
-    port = battery.DEFAULT_BASE_URL.rsplit(":", 1)[1]
-    assert f"EXPOSE {port}" in dockerfile, (
-        f"the battery defaults to port {port}; the image exposes something else"
-    )
-    assert f"0.0.0.0:{port}" in dockerfile, "the CMD binds a different port"

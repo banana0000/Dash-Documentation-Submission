@@ -28,8 +28,3 @@ updates:
       actions:
         patterns:
           - "*"
-
-  - package-ecosystem: docker
-    directory: "/"
-    schedule:
-      interval: monthly

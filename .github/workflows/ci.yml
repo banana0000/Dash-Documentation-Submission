@@ -9,10 +9,11 @@
 #     push does not race the first;
 #   * an explicit `timeout-minutes` on every job — the default is six hours,
 #     which is how a hung `curl` burns a day of runner minutes unnoticed;
-#   * the real Docker image, built with a buildx GHA cache, then BOOTED, then
-#     probed by the same battery that runs against production;
-#   * version fingerprints asserted INSIDE the image, because pip metadata is
-#     invisible from the outside and a stale artifact serves quietly;
+#   * a real gunicorn boot of the app, then probed by the same battery that
+#     runs against production;
+#   * version fingerprints asserted against the installed packages, because
+#     pip metadata is invisible from the outside and a stale artifact serves
+#     quietly;
 #   * a secretless in-process pytest suite — no CLERK_*, no
 #     CROSS_APP_WEBHOOK_SECRET — because the fail-closed behaviour is only
 #     provable when nothing is configured;
@@ -133,8 +134,8 @@ jobs:
         run: |
           pip install -r requirements.txt
           # markdown2dash 0.1.2 declares gunicorn<22 against the CVE-driven
-          # gunicorn>=23 floor. Same two-command install as the Dockerfile,
-          # render.yaml and scripts/dev.sh.
+          # gunicorn>=23 floor. Same two-command install as render.yaml and
+          # scripts/dev.sh.
           pip install --no-deps markdown2dash==0.1.2
           # Dash's own extras are required for the ASGI backends: a bare
           # `fastapi` install is not enough for dash.backends._fastapi to
@@ -196,89 +197,6 @@ jobs:
           curl -sf http://127.0.0.1:8550/networks > /dev/null
           # The battery, against the same server a satellite deploys.
           python3 scripts/network_smoke.py --base-url http://127.0.0.1:8550
-
-  docker:
-    name: docker image · boot · battery
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    needs: [test]
-    steps:
-      - uses: actions/checkout@v4
-
-      # The same build Render runs. This is where a dependency-resolution
-      # failure surfaces — at CI time, not deploy time, where the only signal
-      # is a dashboard log while the old image keeps serving.
-      - uses: docker/setup-buildx-action@v3
-      - name: Build the production image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          tags: dash-docs-boilerplate:ci
-          load: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # pip metadata is invisible from outside a running host, so the versions
-      # are asserted here, inside the artifact that actually ships.
-      - name: Version fingerprints inside the image
-        run: |
-          docker run --rm dash-docs-boilerplate:ci python -c "
-          from importlib.metadata import version
-
-          def parts(v):
-              return tuple(int(x) for x in v.split('.')[:3] if x.isdigit())
-
-          v = version('dash')
-          print('dash', v)
-          assert parts(v)[:2] >= (4, 4), f'expected dash >=4.4, image has {v}'
-
-          v = version('dash-improve-my-llms')
-          print('dash-improve-my-llms', v)
-          assert parts(v) >= (2, 3, 4), f'expected >=2.3.4 (resolve_site_title), image has {v}'
-
-          # markdown2dash installs with --no-deps to dodge its gunicorn<22
-          # pin; this assert is what proves the dodge kept working. 21.x
-          # carried two request-smuggling CVEs (CVE-2024-6827, CVE-2024-1135).
-          v = version('gunicorn')
-          print('gunicorn', v)
-          assert parts(v)[:2] >= (23, 0), f'expected gunicorn>=23, image has {v}'
-
-          # ...and that skipping its dependency graph did not skip the package.
-          import markdown2dash  # noqa: F401
-          print('markdown2dash importable')
-          "
-
-      # Boot with no secrets: Clerk falls open (dev mode), the reporter stays
-      # dormant, the hub client reports itself disabled. What this catches is
-      # any import-time or preload crash — the class of failure where the
-      # platform loops the worker and the deploy never goes live.
-      - name: Boot the container and wait for /healthz
-        run: |
-          docker run -d --name docs -p 8550:8550 dash-docs-boilerplate:ci
-          for i in $(seq 1 60); do
-            if curl -sf http://127.0.0.1:8550/healthz > /dev/null; then
-              echo "healthy after ~$((i*2))s"
-              exit 0
-            fi
-            if [ "$(docker inspect -f '{{.State.Running}}' docs)" != "true" ]; then
-              echo "container exited during boot:"
-              docker logs docs
-              exit 1
-            fi
-            sleep 2
-          done
-          echo "never became healthy; last logs:"
-          docker logs --tail 100 docs
-          exit 1
-
-      # The SAME script CD runs against https://boilerplate.2plot.dev, so a
-      # failure in CI and a failure in production read identically.
-      - name: Smoke battery against the booted container
-        run: python3 scripts/network_smoke.py --base-url http://127.0.0.1:8550
-
-      - name: Container logs (for the record)
-        if: always()
-        run: docker logs --tail 40 docs 2>/dev/null || true
 
   pip-audit:
     name: pip-audit (advisory)

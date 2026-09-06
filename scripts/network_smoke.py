@@ -66,7 +66,7 @@ STUB_MARKER = "This page contains interactive content that requires JavaScript"
 # it, which is the half no unit test can reach.
 SITE_H1 = "# Color Picker"
 
-# The container port. Matches the Dockerfile's EXPOSE and CMD.
+# The port CI's "Boot under a production server" step binds gunicorn to.
 DEFAULT_BASE_URL = "http://localhost:8550"
 
 # Owner-only surfaces that must 404 their llms.txt to an anonymous reader.
