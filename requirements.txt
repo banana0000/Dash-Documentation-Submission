@@ -124,9 +124,10 @@ dash_leaflet2>=0.2.2
 dash_image_gallery>=0.0.1
 dash_mui_charts>=1.4.0
 
-# The /model-viewer page (components/model_viewer_showcase.py,
-# pages/model-viewer.py, and the standalone model_viewer_app.py). Google's
-# <model-viewer> web component wrapped for Dash, from PyPI.
+# The /model-viewer page (pages/model-viewer.py) and its standalone app in
+# model_viewer/ (own Dash instance, own port -- run with
+# `python model_viewer/app.py`). Google's <model-viewer> web component
+# wrapped for Dash, from PyPI.
 dash_model_viewer>=0.0.1
 
 # The /flex-layout page (components/flexlayout_showcase.py,

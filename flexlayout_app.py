@@ -7,7 +7,7 @@ Same component as the /flex-layout page on the main site
 (pages/flex-layout.py) -- both import their layout from
 components/flexlayout_showcase.py. This file is the fully independent
 version: its own Dash(__name__) instance, its own port, no imports from
-pages/ or run.py, the same shape as dash_flow_app.py and model_viewer_app.py.
+pages/ or run.py, the same shape as dash_flow_app.py and model_viewer/app.py.
 """
 import dash_mantine_components as dmc
 from dash import Dash

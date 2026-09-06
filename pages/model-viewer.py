@@ -4,7 +4,7 @@ import dash_mantine_components as dmc
 from dash import register_page
 from dash_iconify import DashIconify
 
-from components.model_viewer_showcase import build_model_viewer_showcase, PAGE_CLASS
+from model_viewer.showcase import build_model_viewer_showcase, PAGE_CLASS
 from lib.constants import HEADER_HEIGHT, OG_IMAGE_URL, PAGE_TITLE_PREFIX
 
 NAME = "3D Model Viewer *"
@@ -38,7 +38,7 @@ DOC_TEXT = (
 
 _CODE_FILES = [
     ("pages/model-viewer.py", "python", "devicon:python"),
-    ("components/model_viewer_showcase.py", "python", "devicon:python"),
+    ("model_viewer/showcase.py", "python", "devicon:python"),
 ]
 _CODE_SOURCE = {path: Path(path).read_text(encoding="utf-8") for path, _lang, _icon in _CODE_FILES}
 

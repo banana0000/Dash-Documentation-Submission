@@ -1,8 +1,8 @@
-/* 3D Model Viewer (components/model_viewer_showcase.py) -- every dmc Button
+/* 3D Model Viewer (model_viewer/showcase.py) -- every dmc Button
    and ActionIcon on this page is bordó (burgundy/maroon) instead of the
    site's default primary color. Scoped to .model-viewer-page (put on the
    outermost container by both pages/model-viewer.py and the standalone
-   model_viewer_app.py) so it doesn't leak into the rest of the site.
+   model_viewer/app.py) so it doesn't leak into the rest of the site.
    Overrides the CSS custom properties Mantine's Button/ActionIcon variants
    read from (mantine-Button-root / mantine-ActionIcon-root both carry a
    `data-variant` attribute -- a stable Mantine styles-API hook), rather than

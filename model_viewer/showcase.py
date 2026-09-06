@@ -1,12 +1,13 @@
 """3D model viewer built on dash_model_viewer (Google's <model-viewer> web
 component, wrapped for Dash by 2plot.ai).
 
-Shared between two entry points, the same shape as components/excalidraw_kpi.py:
+Shared between two entry points, the same shape as components/excalidraw_kpi.py.
+Lives in its own model_viewer/ directory (like roamly/), not components/:
 
 | Where                 | Notes                                            |
 |-----------------------|---------------------------------------------------|
 | pages/model-viewer.py | Embedded page on the main site at /model-viewer    |
-| model_viewer_app.py   | Fully independent standalone app, own Dash(__name__) instance, own port |
+| model_viewer/app.py   | Fully independent standalone app, own Dash(__name__) instance, own port |
 
 Element ids are prefixed ``model-viewer-`` so this page's callbacks never
 collide with ids on any other page of the same running multi-page app.
@@ -94,7 +95,7 @@ _ID_PREFIX = "model-viewer-"
 
 # Every dmc Button/ActionIcon under a .model-viewer-page ancestor is bordó
 # (burgundy) -- see assets/model-viewer.css. Both entry points
-# (pages/model-viewer.py and model_viewer_app.py) put this class on their
+# (pages/model-viewer.py and model_viewer/app.py) put this class on their
 # outermost container, so it's page-wide rather than per-button here.
 PAGE_CLASS = "model-viewer-page"
 
