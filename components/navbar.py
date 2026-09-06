@@ -26,6 +26,7 @@ apps_paths = [
     "/excalidraw",
     "/dash-flow",
     "/roamly",
+    "/model-viewer",
 ]
 
 

@@ -1,0 +1,34 @@
+/* 3D Model Viewer (components/model_viewer_showcase.py) -- every dmc Button
+   and ActionIcon on this page is bordó (burgundy/maroon) instead of the
+   site's default primary color. Scoped to .model-viewer-page (put on the
+   outermost container by both pages/model-viewer.py and the standalone
+   model_viewer_app.py) so it doesn't leak into the rest of the site.
+   Overrides the CSS custom properties Mantine's Button/ActionIcon variants
+   read from (mantine-Button-root / mantine-ActionIcon-root both carry a
+   `data-variant` attribute -- a stable Mantine styles-API hook), rather than
+   a dmc `color` prop, per request ("cssben legyen bordó"). Loaded
+   automatically for both entry points -- both serve the repo-root assets/
+   folder. */
+.model-viewer-page .mantine-Button-root,
+.model-viewer-page .mantine-ActionIcon-root {
+    --button-bg: #7a1f2b !important;
+    --button-hover: #5e1620 !important;
+    --button-bd: 1px solid #7a1f2b !important;
+    --button-color: #f3d9de !important;
+
+    --ai-bg: #7a1f2b !important;
+    --ai-hover: #5e1620 !important;
+    --ai-bd: 1px solid #7a1f2b !important;
+    --ai-color: #f3d9de !important;
+}
+
+/* Slider bar/thumb fill and the Switch's checked-track fill. */
+.model-viewer-page .mantine-Slider-root {
+    --slider-color: #7a1f2b !important;
+}
+
+.model-viewer-page .mantine-Switch-root {
+    /* Not --switch-bg -- Mantine's own [data-checked] rule recomputes that
+       one from --switch-color every time, which would stomp this. */
+    --switch-color: #7a1f2b !important;
+}
