@@ -129,6 +129,11 @@ dash_mui_charts>=1.4.0
 # <model-viewer> web component wrapped for Dash, from PyPI.
 dash_model_viewer>=0.0.1
 
+# The /flex-layout page (components/flexlayout_showcase.py,
+# pages/flex-layout.py, and the standalone flexlayout_app.py). An IDE-style
+# docking layout -- flexlayout-react wrapped for Dash, from PyPI.
+dash-flexlayout>=0.0.1
+
 # Production Servers
 # - gunicorn   -> WSGI (Flask)
 # - uvicorn    -> ASGI (FastAPI / Quart)

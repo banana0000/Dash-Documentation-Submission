@@ -1,0 +1,77 @@
+/* FlexLayout Playground (components/flexlayout_showcase.py) -- cyan accent
+   throughout: every dmc Button/ActionIcon/Switch, and flexlayout-react's own
+   selected-tab/splitter/drag-indicator colors (its own CSS custom
+   properties, documented at https://github.com/caplin/FlexLayout). Scoped to
+   .flexlayout-page (put on the outermost container by both
+   pages/flex-layout.py and the standalone flexlayout_app.py) so it doesn't
+   leak into the rest of the site. Loaded automatically for both entry
+   points -- both serve the repo-root assets/ folder. */
+.flexlayout-page .mantine-Button-root,
+.flexlayout-page .mantine-ActionIcon-root {
+    --button-bg: #0891b2 !important;
+    --button-hover: #0e7490 !important;
+    --button-bd: 1px solid #0891b2 !important;
+    --button-color: #e0fbff !important;
+
+    --ai-bg: #0891b2 !important;
+    --ai-hover: #0e7490 !important;
+    --ai-bd: 1px solid #0891b2 !important;
+    --ai-color: #e0fbff !important;
+}
+
+.flexlayout-page .mantine-Switch-root {
+    --switch-color: #0891b2 !important;
+}
+
+.flexlayout-page .flexlayout__layout {
+    --color-tab-selected: #0891b2 !important;
+    --color-border-tab-selected: #0891b2 !important;
+    --color-splitter-hover: #0891b2 !important;
+    --color-splitter-drag: #0891b2 !important;
+    --color-drag-rect-border: #0891b2 !important;
+    --color-edge-marker: #0891b2 !important;
+
+    /* Every FlexLayout surface -- tabset body, tab headers (selected and
+       not), popups -- the same white, not the library's own shaded
+       defaults, so there's no visible seam between panels. */
+    --color-background: #ffffff !important;
+    --color-base: #ffffff !important;
+    --color-text: #212529 !important;
+    --color-icon: #212529 !important;
+    --color-border: #e9ecef !important;
+    --color-border-background: #ffffff !important;
+    --color-border-divider-line: #e9ecef !important;
+    --color-tabset-background: #ffffff !important;
+    --color-tabset-background-maximized: #ffffff !important;
+    --color-tabset-background-selected: #ffffff !important;
+    --color-tabset-header: #212529 !important;
+    --color-tabset-header-background: #ffffff !important;
+    --color-tabset-divider-line: #e9ecef !important;
+    --color-tab-unselected: #212529 !important;
+    --color-tab-unselected-background: #ffffff !important;
+    --color-tab-selected-background: #ffffff !important;
+    --color-border-tab-unselected: #e9ecef !important;
+    --color-border-tab-unselected-background: #ffffff !important;
+    --color-border-tab-selected-background: #ffffff !important;
+    --color-popup-border: #e9ecef !important;
+    --color-popup-unselected: #212529 !important;
+    --color-popup-unselected-background: #ffffff !important;
+    --color-popup-selected: #ffffff !important;
+    --color-popup-selected-background: #0891b2 !important;
+    --color-splitter: #ffffff !important;
+    background: #ffffff !important;
+}
+
+/* The dmc surfaces around the panel -- Paper, Select/MultiSelect fields,
+   the orders Table -- the same white, not Mantine's default off-white
+   gray.0/gray.1 shades. */
+.flexlayout-page .mantine-Paper-root,
+.flexlayout-page .mantine-Select-input,
+.flexlayout-page .mantine-MultiSelect-input,
+.flexlayout-page .mantine-PillsInput-input,
+.flexlayout-page .mantine-Table-table,
+.flexlayout-page .mantine-Table-tr,
+.flexlayout-page .mantine-Table-th,
+.flexlayout-page .mantine-Table-td {
+    background-color: #ffffff !important;
+}

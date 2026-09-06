@@ -27,6 +27,7 @@ apps_paths = [
     "/dash-flow",
     "/roamly",
     "/model-viewer",
+    "/flex-layout",
 ]
 
 
