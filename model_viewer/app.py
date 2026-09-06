@@ -3,7 +3,8 @@
 Install with: pip install -r model_viewer/requirements.txt (or, running
 inside the main repo's own env, its deps are already pinned in the
 repo-root requirements.txt too).
-Run: python model_viewer/app.py, then open http://127.0.0.1:8080
+Run: python model_viewer/app.py, then open http://127.0.0.1:8081
+(8081, not the other standalone apps' 8080, so it can run alongside them)
 
 Same component as the /model-viewer page on the main site
 (pages/model-viewer.py, which imports it as model_viewer.showcase) -- this
@@ -53,5 +54,5 @@ app.layout = dmc.MantineProvider(
 
 
 if __name__ == "__main__":
-    print("3D Model Viewer starting on http://localhost:8080/")
-    app.run(debug=False, port=8080)
+    print("3D Model Viewer starting on http://localhost:8081/")
+    app.run(debug=False, port=8081)
