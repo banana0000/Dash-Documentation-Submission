@@ -11,4 +11,4 @@ plotly>=6.9.0
 dash_leaflet2>=0.2.2
 dash_image_gallery>=0.0.1
 dash_mui_charts>=1.4.0
-gunicorn>=23.0.0
+gunicorn>=26.2.0
