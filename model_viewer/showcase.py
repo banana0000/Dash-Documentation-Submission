@@ -9,14 +9,21 @@ Lives in its own model_viewer/ directory (like roamly/), not components/:
 | pages/model-viewer.py | Embedded page on the main site at /model-viewer    |
 | model_viewer/app.py   | Fully independent standalone app, own Dash(__name__) instance, own port |
 
+model_viewer/app.py imports this module bare (``from showcase import ...``)
+so the whole model_viewer/ directory stays deployable on its own; the
+embedded page imports it as ``model_viewer.showcase`` instead, since it
+runs from the repo root where model_viewer/ is a package (see
+model_viewer/__init__.py).
+
 Element ids are prefixed ``model-viewer-`` so this page's callbacks never
 collide with ids on any other page of the same running multi-page app.
 
 Model files are Khronos/Google's own public glTF samples, hosted on
 raw.githubusercontent.com / modelviewer.dev's shared-assets CDN -- free, no
 API key, no local files to ship in this repo. Every control's color (bordó/
-burgundy) comes from assets/model-viewer.css, scoped to the ``PAGE_CLASS``
-wrapper below, not a dmc `color` prop.
+burgundy) comes from model-viewer.css -- the repo-root assets/ copy for the
+embedded page, model_viewer/assets/ for the standalone app -- scoped to the
+``PAGE_CLASS`` wrapper below, not a dmc `color` prop.
 """
 import json
 import re

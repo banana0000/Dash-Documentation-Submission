@@ -97,3 +97,19 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.0"
+
+  # 3D Model Viewer -- the standalone app in model_viewer/. Same shape as
+  # Roamly above: its own service, own URL, no shared env vars or disk,
+  # doesn't import anything from this repo's root.
+  - type: web
+    name: model-viewer
+    runtime: python
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: model_viewer
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:server -b 0.0.0.0:$PORT --workers 2 --timeout 60
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"

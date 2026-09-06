@@ -1,30 +1,26 @@
 """Standalone entry point for the 3D Model Viewer.
 
-Install with: pip install dash_model_viewer (already pinned in requirements.txt).
+Install with: pip install -r model_viewer/requirements.txt (or, running
+inside the main repo's own env, its deps are already pinned in the
+repo-root requirements.txt too).
 Run: python model_viewer/app.py, then open http://127.0.0.1:8080
 
 Same component as the /model-viewer page on the main site
-(pages/model-viewer.py) -- both import their layout from
-model_viewer/showcase.py. This file is the fully independent version: its
-own Dash(__name__) instance, its own port, no imports from pages/ or
-run.py, the same shape as dash_flow_app.py and excalidraw_app.py. Lives in
-its own directory the same way roamly/ does, but its CSS (model-viewer.css)
-stays in the repo-level assets/ folder since the embedded page needs it
-there too -- so assets_folder is pointed back at that shared folder instead
-of the (nonexistent) model_viewer/assets/.
+(pages/model-viewer.py, which imports it as model_viewer.showcase) -- this
+file imports the sibling module bare (`from showcase import ...`) instead,
+same as roamly/pages/*.py importing roamly/data.py as bare `data`. That
+bare import is what lets this whole model_viewer/ directory be deployed on
+its own (e.g. Render with rootDir: model_viewer) without the rest of this
+repo present: no imports from pages/, components/ or run.py, its own
+Dash(__name__) instance (own assets/ subfolder, own port), the same shape
+as roamly/app.py.
 """
-import sys
-from pathlib import Path
-
-_REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(_REPO_ROOT))
-
 import dash_mantine_components as dmc
 from dash import Dash
 
-from model_viewer.showcase import build_model_viewer_showcase, PAGE_CLASS
+from showcase import build_model_viewer_showcase, PAGE_CLASS
 
-app = Dash(__name__, assets_folder=str(_REPO_ROOT / "assets"))
+app = Dash(__name__)
 app.title = "3D Model Viewer"
 server = app.server
 

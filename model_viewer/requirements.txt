@@ -1,0 +1,11 @@
+# 3D Model Viewer -- standalone requirements for deploying this app on its
+# own (Render, or `pip install -r model_viewer/requirements.txt` anywhere
+# else). The main repo's own requirements.txt already includes these too,
+# since the Model Viewer also runs embedded in this repo's dev environment
+# -- this file exists so it can be deployed independently, without
+# installing the rest of the site's dependencies it doesn't use.
+dash~=4.4.1
+dash-mantine-components>=2.8.0
+dash-iconify>=0.1.2
+dash_model_viewer>=0.0.1
+gunicorn>=23.0.0

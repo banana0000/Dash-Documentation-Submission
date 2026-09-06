@@ -6,12 +6,12 @@
    Overrides the CSS custom properties Mantine's Button/ActionIcon variants
    read from (mantine-Button-root / mantine-ActionIcon-root both carry a
    `data-variant` attribute -- a stable Mantine styles-API hook), rather than
-   a dmc `color` prop, per request ("cssben legyen bordó"). Loaded
-   automatically here for the embedded /model-viewer page; the standalone
-   app in model_viewer/ keeps its own identical copy at
-   model_viewer/assets/model-viewer.css so it stays deployable on its own,
-   the same reason roamly/assets/ exists alongside this repo-root assets/
-   folder. */
+   a dmc `color` prop, per request ("cssben legyen bordó"). This is the
+   standalone app's own copy, loaded automatically by model_viewer/app.py's
+   `Dash(__name__)` (default assets_folder resolves to this directory) so
+   this app deploys on its own without reaching into the repo-root assets/
+   folder used by the embedded /model-viewer page -- same as roamly/assets/
+   next to roamly/app.py. */
 .model-viewer-page .mantine-Button-root,
 .model-viewer-page .mantine-ActionIcon-root {
     --button-bg: #7a1f2b !important;
