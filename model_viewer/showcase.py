@@ -174,17 +174,6 @@ def build_model_viewer_showcase(height="70vh"):
             ),
             dmc.Switch(id=_id("ar-toggle"), label="AR button", checked=True, size="sm"),
             dmc.Switch(id=_id("controls-toggle"), label="Camera controls", checked=True, size="sm"),
-            dmc.Stack(
-                [
-                    dmc.Switch(id=_id("measure-toggle"), label="Measure size", checked=False, size="sm"),
-                    # Populated by _measure_size below with the model's real
-                    # bounding-box size (model-viewer's own getDimensions(),
-                    # in meters -- not guessed from the asset). Empty and
-                    # invisible (no reserved height) until switched on.
-                    dmc.Text(id=_id("measure-readout"), size="xs", c="dimmed"),
-                ],
-                gap=4,
-            ),
             dmc.Button(
                 "Reset camera", id=_id("reset-camera-btn"), n_clicks=0,
                 leftSection=DashIconify(icon="mdi:camera-retake-outline", width=16),
@@ -391,58 +380,5 @@ clientside_callback(
     """,
     Output(_id("texture-signal"), "data"),
     Input(_id("upload-texture"), "contents"),
-    prevent_initial_call=True,
-)
-
-
-# Real dimensions, not guessed ones: model-viewer's own getDimensions()
-# returns the loaded model's bounding-box size in meters, independent of
-# turntable rotation. Also drops three small hotspots (cyan dots, styled
-# via .measure-hotspot in model-viewer.css) at the box's +X/+Y/+Z extents
-# from its center so the measured directions are visible on the model
-# itself, not just as a number in the sidebar. Runs on both the toggle and
-# the model picker so switching models while "Measure size" is on
-# recomputes for the new model -- awaiting model-viewer's own `load` event
-# if the new model hasn't finished loading yet, same async-in-clientside
-# pattern as the texture-upload callback above.
-clientside_callback(
-    """
-    async function(checked, _modelKey) {
-        const viewer = document.getElementById('""" + _id("viewer") + """');
-        if (!viewer) { return [window.dash_clientside.no_update, window.dash_clientside.no_update]; }
-        if (!checked) { return [[], '']; }
-        if (!viewer.model || typeof viewer.getDimensions !== 'function') {
-            await new Promise(function(resolve) {
-                viewer.addEventListener('load', resolve, {once: true});
-            });
-        }
-        const dim = viewer.getDimensions();
-        const center = viewer.getBoundingBoxCenter();
-        const cm = function(v) { return (v * 100).toFixed(1); };
-        const hotspots = [
-            {
-                slot: 'hotspot-measure-w',
-                position: (center.x + dim.x / 2) + ' ' + center.y + ' ' + center.z,
-                children_classname: 'measure-hotspot',
-            },
-            {
-                slot: 'hotspot-measure-h',
-                position: center.x + ' ' + (center.y + dim.y / 2) + ' ' + center.z,
-                children_classname: 'measure-hotspot',
-            },
-            {
-                slot: 'hotspot-measure-d',
-                position: center.x + ' ' + center.y + ' ' + (center.z + dim.z / 2),
-                children_classname: 'measure-hotspot',
-            },
-        ];
-        const text = 'W ' + cm(dim.x) + ' cm  \\u00b7  H ' + cm(dim.y) + ' cm  \\u00b7  D ' + cm(dim.z) + ' cm';
-        return [hotspots, text];
-    }
-    """,
-    Output(_id("viewer"), "hotspots"),
-    Output(_id("measure-readout"), "children"),
-    Input(_id("measure-toggle"), "checked"),
-    Input(_id("model-picker"), "value"),
     prevent_initial_call=True,
 )

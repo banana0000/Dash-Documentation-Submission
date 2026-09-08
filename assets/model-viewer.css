@@ -46,18 +46,3 @@
 .model-viewer-page .mantine-Input-input:focus {
     border-color: #0891b2 !important;
 }
-
-/* "Measure size" hotspots (model_viewer/showcase.py's measure-toggle
-   clientside callback) -- model-viewer's default hotspot dot is white;
-   this recolors it cyan and gives it a soft glow ring so the three
-   width/height/depth marker points read as deliberate annotations, not
-   stray white specks on the model. */
-.model-viewer-page model-viewer .measure-hotspot {
-    width: 12px !important;
-    height: 12px !important;
-    border-radius: 50% !important;
-    padding: 0 !important;
-    background: #0891b2 !important;
-    border: 2px solid #e0fbff !important;
-    box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.35) !important;
-}
