@@ -95,6 +95,14 @@ MODELS = {
         "alt": "A 3D model of a real glass object with physically-based transparency and refraction",
         "orbit": "0deg 75deg 0.5m",
     },
+    "car-concept": {
+        "label": "Modern Car",
+        # Khronos's own concept-car showcase model -- full PBR paint,
+        # glass and chrome materials, same free/no-key CDN as the rest.
+        "src": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CarConcept/glTF-Binary/CarConcept.glb",
+        "alt": "A 3D model of a modern concept car with realistic PBR paint, glass and chrome materials",
+        "orbit": "35deg 75deg 6m",
+    },
 }
 
 TONE_MAPPINGS = ["neutral", "aces", "agx", "reinhard", "cineon", "linear", "none"]
@@ -165,6 +173,7 @@ def build_model_viewer_showcase(height="70vh"):
                 label=_UPLOAD_MODEL_HINT,
                 position="bottom",
                 withArrow=True,
+                style={"display": "block", "width": "100%"},
             ),
             dmc.Select(
                 id=_id("tone-picker"),
@@ -211,6 +220,7 @@ def build_model_viewer_showcase(height="70vh"):
                 label=_UPLOAD_HINT,
                 position="bottom",
                 withArrow=True,
+                style={"display": "block", "width": "100%"},
             ),
         ],
         gap="md",

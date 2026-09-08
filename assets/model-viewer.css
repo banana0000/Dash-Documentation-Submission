@@ -46,3 +46,23 @@
 .model-viewer-page .mantine-Input-input:focus {
     border-color: #0891b2 !important;
 }
+
+/* Reset camera specifically gets a black fill instead of the rest of the
+   page's cyan -- an #id selector to outrank the .mantine-Button-root rule
+   above on specificity, so only this one button differs. */
+.model-viewer-page #model-viewer-reset-camera-btn {
+    --button-bg: #000000 !important;
+    --button-hover: #1a1a1a !important;
+    --button-bd: none !important;
+    --button-color: #e0fbff !important;
+}
+
+/* dcc.Upload always wraps its children in an inner div hard-coded to
+   `width: fit-content` (not reachable through dcc.Upload's own `style`
+   prop, which only lands on its outer div) -- that's what was making the
+   Upload texture/model buttons narrower than Reset camera despite both
+   using dmc.Button(fullWidth=True) in the same 220px sidebar. Matched by
+   its literal inline style text since dcc.Upload gives it no class. */
+.model-viewer-page div[style*="width: fit-content"] {
+    width: 100% !important;
+}
