@@ -1,37 +1,48 @@
-/* 3D Model Viewer (model_viewer/showcase.py) -- every dmc Button
-   and ActionIcon on this page is bordó (burgundy/maroon) instead of the
-   site's default primary color. Scoped to .model-viewer-page (put on the
-   outermost container by both pages/model-viewer.py and the standalone
-   model_viewer/app.py) so it doesn't leak into the rest of the site.
-   Overrides the CSS custom properties Mantine's Button/ActionIcon variants
-   read from (mantine-Button-root / mantine-ActionIcon-root both carry a
-   `data-variant` attribute -- a stable Mantine styles-API hook), rather than
-   a dmc `color` prop, per request ("cssben legyen bordó"). This is the
-   standalone app's own copy, loaded automatically by model_viewer/app.py's
-   `Dash(__name__)` (default assets_folder resolves to this directory) so
-   this app deploys on its own without reaching into the repo-root assets/
-   folder used by the embedded /model-viewer page -- same as roamly/assets/
-   next to roamly/app.py. */
+/* 3D Model Viewer (model_viewer/showcase.py) -- every dmc Button, ActionIcon,
+   Slider and Switch on this page is cyan (matching the /flex-layout page's
+   accent, assets/flexlayout.css) instead of the site's default primary
+   color -- was bordó/burgundy, changed to cyan "mindenhol" per follow-up
+   request. Scoped to .model-viewer-page (put on the outermost container by
+   both pages/model-viewer.py and the standalone model_viewer/app.py) so it
+   doesn't leak into the rest of the site. Overrides the CSS custom
+   properties Mantine's Button/ActionIcon variants read from
+   (mantine-Button-root / mantine-ActionIcon-root both carry a
+   `data-variant` attribute -- a stable Mantine styles-API hook), rather
+   than a dmc `color` prop. This is the standalone app's own copy, loaded
+   automatically by model_viewer/app.py's `Dash(__name__)` (default
+   assets_folder resolves to this directory) so this app deploys on its own
+   without reaching into the repo-root assets/ folder used by the embedded
+   /model-viewer page -- same as roamly/assets/ next to roamly/app.py. */
 .model-viewer-page .mantine-Button-root,
 .model-viewer-page .mantine-ActionIcon-root {
-    --button-bg: #7a1f2b !important;
-    --button-hover: #5e1620 !important;
-    --button-bd: 1px solid #7a1f2b !important;
-    --button-color: #f3d9de !important;
+    --button-bg: #0891b2 !important;
+    --button-hover: #0e7490 !important;
+    --button-bd: 1px solid #0891b2 !important;
+    --button-color: #e0fbff !important;
 
-    --ai-bg: #7a1f2b !important;
-    --ai-hover: #5e1620 !important;
-    --ai-bd: 1px solid #7a1f2b !important;
-    --ai-color: #f3d9de !important;
+    --ai-bg: #0891b2 !important;
+    --ai-hover: #0e7490 !important;
+    --ai-bd: 1px solid #0891b2 !important;
+    --ai-color: #e0fbff !important;
 }
 
 /* Slider bar/thumb fill and the Switch's checked-track fill. */
 .model-viewer-page .mantine-Slider-root {
-    --slider-color: #7a1f2b !important;
+    --slider-color: #0891b2 !important;
 }
 
 .model-viewer-page .mantine-Switch-root {
     /* Not --switch-bg -- Mantine's own [data-checked] rule recomputes that
        one from --switch-color every time, which would stomp this. */
-    --switch-color: #7a1f2b !important;
+    --switch-color: #0891b2 !important;
+}
+
+/* The Model / Tone mapping Selects show the site's global primaryColor
+   as their focus-ring border -- the one control this page's cyan didn't
+   reach. Direct border-color override since Mantine sets it via
+   `border-color: var(--mantine-primary-color-filled)` on :focus rather
+   than through a --input-* custom property this page already touches
+   elsewhere. */
+.model-viewer-page .mantine-Input-input:focus {
+    border-color: #0891b2 !important;
 }

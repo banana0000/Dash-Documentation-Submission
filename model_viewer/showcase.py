@@ -20,9 +20,9 @@ collide with ids on any other page of the same running multi-page app.
 
 Model files are Khronos/Google's own public glTF samples, hosted on
 raw.githubusercontent.com / modelviewer.dev's shared-assets CDN -- free, no
-API key, no local files to ship in this repo. Every control's color (bordó/
-burgundy) comes from model-viewer.css -- the repo-root assets/ copy for the
-embedded page, model_viewer/assets/ for the standalone app -- scoped to the
+API key, no local files to ship in this repo. Every control's color (cyan)
+comes from model-viewer.css -- the repo-root assets/ copy for the embedded
+page, model_viewer/assets/ for the standalone app -- scoped to the
 ``PAGE_CLASS`` wrapper below, not a dmc `color` prop.
 """
 import json
@@ -100,8 +100,8 @@ TONE_MAPPINGS = ["neutral", "aces", "agx", "reinhard", "cineon", "linear", "none
 
 _ID_PREFIX = "model-viewer-"
 
-# Every dmc Button/ActionIcon under a .model-viewer-page ancestor is bordó
-# (burgundy) -- see assets/model-viewer.css. Both entry points
+# Every dmc Button/ActionIcon under a .model-viewer-page ancestor is cyan
+# -- see assets/model-viewer.css. Both entry points
 # (pages/model-viewer.py and model_viewer/app.py) put this class on their
 # outermost container, so it's page-wide rather than per-button here.
 PAGE_CLASS = "model-viewer-page"
@@ -177,7 +177,7 @@ def build_model_viewer_showcase(height="70vh"):
             dmc.Button(
                 "Reset camera", id=_id("reset-camera-btn"), n_clicks=0,
                 leftSection=DashIconify(icon="mdi:camera-retake-outline", width=16),
-                variant="outline", fullWidth=True,
+                variant="filled", fullWidth=True,
             ),
             dmc.Tooltip(
                 dcc.Upload(
