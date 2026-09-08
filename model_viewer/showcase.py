@@ -34,7 +34,6 @@ from dash_iconify import DashIconify
 from dash_model_viewer import DashModelViewer
 
 _UPLOAD_HINT = "Applies this PNG as the model's surface texture."
-_UPLOAD_MODEL_HINT = "View your own .glb/.gltf file instead of the presets above."
 
 _SKULL_SRC = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/ScatteringSkull/glTF-Binary/ScatteringSkull.glb"
 
@@ -158,23 +157,6 @@ def build_model_viewer_showcase(height="70vh"):
                 allowDeselect=False,
                 w="100%",
             ),
-            dmc.Tooltip(
-                dcc.Upload(
-                    id=_id("upload-model"),
-                    accept=".glb,.gltf",
-                    multiple=False,
-                    children=dmc.Button(
-                        "Upload 3D model (.glb)",
-                        leftSection=DashIconify(icon="mdi:cube-send", width=16),
-                        variant="outline", fullWidth=True, size="xs",
-                    ),
-                    style={"width": "100%"},
-                ),
-                label=_UPLOAD_MODEL_HINT,
-                position="bottom",
-                withArrow=True,
-                style={"display": "block", "width": "100%"},
-            ),
             dmc.Select(
                 id=_id("tone-picker"),
                 label="Tone mapping",
@@ -220,7 +202,6 @@ def build_model_viewer_showcase(height="70vh"):
                 label=_UPLOAD_HINT,
                 position="bottom",
                 withArrow=True,
-                style={"display": "block", "width": "100%"},
             ),
         ],
         gap="md",
@@ -292,42 +273,8 @@ def build_model_viewer_showcase(height="70vh"):
     prevent_initial_call=True,
 )
 def _switch_model(model_key):
-    # model_key is "custom" right after _upload_model below adds it to the
-    # picker's own data/value -- not one of the presets, so there's nothing
-    # to switch to here; the uploaded src is already showing.
-    model = MODELS.get(model_key)
-    if model is None:
-        return no_update, no_update, no_update, no_update
+    model = MODELS[model_key]
     return model["src"], model["alt"], model["orbit"], _default_target(model)
-
-
-@callback(
-    Output(_id("viewer"), "src", allow_duplicate=True),
-    Output(_id("viewer"), "alt", allow_duplicate=True),
-    Output(_id("viewer"), "cameraOrbit", allow_duplicate=True),
-    Output(_id("viewer"), "cameraTarget", allow_duplicate=True),
-    Output(_id("model-picker"), "data"),
-    Output(_id("model-picker"), "value", allow_duplicate=True),
-    Input(_id("upload-model"), "contents"),
-    State(_id("upload-model"), "filename"),
-    prevent_initial_call=True,
-)
-def _upload_model(contents, filename):
-    """dcc.Upload already hands back a data: URI (base64), and model-viewer's
-    `src` fetches whatever URL it's given -- including a data: URI -- so
-    this needs no clientside object-URL plumbing, just passing it through.
-    Appends a "custom" entry to the picker so it reflects what's actually
-    showing, rather than leaving the last preset's name selected over a
-    completely different model.
-    """
-    if not contents:
-        return no_update, no_update, no_update, no_update, no_update, no_update
-    options = [{"label": v["label"], "value": k} for k, v in MODELS.items()]
-    options.append({"label": filename or "Uploaded model", "value": "custom"})
-    alt = f"An uploaded 3D model: {filename}" if filename else "An uploaded 3D model"
-    # "auto auto auto" lets model-viewer frame this unfamiliar model itself
-    # -- there's no hand-picked orbit/target for a file it's never seen.
-    return contents, alt, "auto auto auto", "auto auto auto", options, "custom"
 
 
 @callback(
@@ -340,11 +287,7 @@ def _upload_model(contents, filename):
 )
 def _zoom(_n_in, _n_out, current_orbit, model_key):
     factor = 0.8 if ctx.triggered_id == _id("zoom-in-btn") else 1.25
-    # model_key is "custom" for an uploaded model -- not in MODELS, but
-    # current_orbit is never falsy by the time this fires (_upload_model
-    # seeds it with "auto auto auto"), so this fallback is just a guard.
-    fallback = MODELS.get(model_key, {}).get("orbit", "0deg 75deg 1m")
-    orbit = current_orbit or fallback
+    orbit = current_orbit or MODELS[model_key]["orbit"]
     return _scale_orbit_radius(orbit, factor)
 
 

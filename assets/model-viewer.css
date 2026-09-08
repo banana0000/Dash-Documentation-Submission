@@ -57,12 +57,16 @@
     --button-color: #e0fbff !important;
 }
 
-/* dcc.Upload always wraps its children in an inner div hard-coded to
-   `width: fit-content` (not reachable through dcc.Upload's own `style`
-   prop, which only lands on its outer div) -- that's what was making the
-   Upload texture/model buttons narrower than Reset camera despite both
-   using dmc.Button(fullWidth=True) in the same 220px sidebar. Matched by
-   its literal inline style text since dcc.Upload gives it no class. */
-.model-viewer-page div[style*="width: fit-content"] {
+/* dmc.Tooltip's floating-reference wrapper defaults to `width: fit-content`
+   inline style on the div it puts directly around its child -- here that
+   child is dcc.Upload's own root (#model-viewer-upload-texture), so this
+   was shrinking the Upload texture button below Reset camera's width
+   despite both using dmc.Button(fullWidth=True) in the same 220px
+   sidebar. :has() scopes the override to that one Tooltip wrapper --
+   an earlier, unscoped version of this rule (matching every such div
+   anywhere on the page) also stretched the title row's "Copy llms.txt
+   URL" tooltip to full width, breaking its space-between layout with the
+   page title next to it. */
+.model-viewer-page div[style*="width: fit-content"]:has(> #model-viewer-upload-texture) {
     width: 100% !important;
 }
