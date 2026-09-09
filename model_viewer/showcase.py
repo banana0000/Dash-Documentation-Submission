@@ -106,6 +106,37 @@ MODELS = {
 
 TONE_MAPPINGS = ["neutral", "aces", "agx", "reinhard", "cineon", "linear", "none"]
 
+# Show dimensions: 6 "dot" hotspots tracing a zigzag along 3 orthogonal
+# edges through one shared corner (+X-Y+Z -> +X-Y-Z -> +X+Y-Z -> -X+Y-Z ->
+# -X-Y-Z -> -X-Y+Z), each pair one edge apart, plus a "dim" label hotspot
+# at each edge's midpoint. Positions start empty ("" -- not a real 3D
+# coordinate) because _update_dimensions below repositions every one of
+# them with model-viewer's own updateHotspot() once the actual model's
+# bounding box is known; only their slot names, and which axis each edge
+# runs along, are fixed ahead of time. children_classname drives the
+# cyan-dot / label-pill look in model-viewer.css.
+DIMENSION_HOTSPOTS = [
+    {"slot": "hotspot-dot+X-Y+Z", "position": "0 0 0", "children_classname": "dot"},
+    {"slot": "hotspot-dot+X-Y-Z", "position": "0 0 0", "children_classname": "dot"},
+    {"slot": "hotspot-dot+X+Y-Z", "position": "0 0 0", "children_classname": "dot"},
+    {"slot": "hotspot-dot-X+Y-Z", "position": "0 0 0", "children_classname": "dot"},
+    {"slot": "hotspot-dot-X-Y-Z", "position": "0 0 0", "children_classname": "dot"},
+    {"slot": "hotspot-dot-X-Y+Z", "position": "0 0 0", "children_classname": "dot"},
+    {"slot": "hotspot-dim+X-Y", "position": "0 0 0", "children_classname": "dim"},
+    {"slot": "hotspot-dim+X-Z", "position": "0 0 0", "children_classname": "dim"},
+    {"slot": "hotspot-dim+Y-Z", "position": "0 0 0", "children_classname": "dim"},
+    {"slot": "hotspot-dim-X-Z", "position": "0 0 0", "children_classname": "dim"},
+    {"slot": "hotspot-dim-X-Y", "position": "0 0 0", "children_classname": "dim"},
+]
+
+DIMENSION_UNITS = [
+    {"label": "cm", "value": "cm"},
+    {"label": "mm", "value": "mm"},
+    {"label": "m", "value": "m"},
+    {"label": "in", "value": "in"},
+    {"label": "ft", "value": "ft"},
+]
+
 _ID_PREFIX = "model-viewer-"
 
 # Every dmc Button/ActionIcon under a .model-viewer-page ancestor is cyan
@@ -182,6 +213,21 @@ def build_model_viewer_showcase(height="70vh"):
             ),
             dmc.Switch(id=_id("ar-toggle"), label="AR button", checked=True, size="sm"),
             dmc.Switch(id=_id("controls-toggle"), label="Camera controls", checked=True, size="sm"),
+            dmc.Group(
+                [
+                    dmc.Switch(id=_id("dims-toggle"), label="Show dimensions", checked=False, size="sm"),
+                    dmc.Select(
+                        id=_id("dims-units"),
+                        data=DIMENSION_UNITS,
+                        value="cm",
+                        clearable=False,
+                        allowDeselect=False,
+                        w=70,
+                        size="xs",
+                    ),
+                ],
+                justify="space-between", gap="xs", wrap="nowrap",
+            ),
             dmc.Button(
                 "Reset camera", id=_id("reset-camera-btn"), n_clicks=0,
                 leftSection=DashIconify(icon="mdi:camera-retake-outline", width=16),
@@ -210,7 +256,8 @@ def build_model_viewer_showcase(height="70vh"):
     )
 
     viewer = dmc.Paper(
-        [
+        id=_id("viewer-container"),
+        children=[
             DashModelViewer(
                 id=_id("viewer"),
                 src=default_model["src"],
@@ -221,6 +268,7 @@ def build_model_viewer_showcase(height="70vh"):
                 ar=True,
                 toneMapping="neutral",
                 shadowIntensity=1,
+                hotspots=[],
                 style={"width": "100%", "height": "100%", "--poster-color": "transparent"},
             ),
             # Zoom in/out overlay -- cameraControls already lets you
@@ -259,6 +307,7 @@ def build_model_viewer_showcase(height="70vh"):
             controls, viewer,
             dcc.Store(id=_id("reset-camera-signal")),
             dcc.Store(id=_id("texture-signal")),
+            dcc.Store(id=_id("dims-signal")),
         ],
         align="flex-start", gap="sm", wrap="nowrap",
     )
@@ -388,5 +437,130 @@ clientside_callback(
     """,
     Output(_id("texture-signal"), "data"),
     Input(_id("upload-texture"), "contents"),
+    prevent_initial_call=True,
+)
+
+
+@callback(
+    Output(_id("viewer"), "hotspots"),
+    Input(_id("dims-toggle"), "checked"),
+    prevent_initial_call=True,
+)
+def _toggle_dimension_hotspots(checked):
+    """Only controls hotspot *presence* -- their actual 3D positions, edge
+    labels and connecting lines are computed and drawn client-side, by
+    _update_dimensions below, since that needs the live model's real
+    bounding box (model-viewer's getDimensions()/getBoundingBoxCenter()),
+    which Python has no access to.
+    """
+    return DIMENSION_HOTSPOTS if checked else []
+
+
+_DOT_SLOTS_JSON = json.dumps([h["slot"] for h in DIMENSION_HOTSPOTS if h["children_classname"] == "dot"])
+# Each edge connects two consecutive dots (indices into _DOT_SLOTS_JSON) --
+# together the 5 edges trace the zigzag comment on DIMENSION_HOTSPOTS
+# above -- and names which axis (and so which of the model's real x/y/z
+# dimensions) that edge's length comes from.
+_DIM_EDGES_JSON = json.dumps([
+    {"slot": "hotspot-dim+X-Y", "from": 0, "to": 1, "axis": "z"},
+    {"slot": "hotspot-dim+X-Z", "from": 1, "to": 2, "axis": "y"},
+    {"slot": "hotspot-dim+Y-Z", "from": 2, "to": 3, "axis": "x"},
+    {"slot": "hotspot-dim-X-Z", "from": 3, "to": 4, "axis": "y"},
+    {"slot": "hotspot-dim-X-Y", "from": 4, "to": 5, "axis": "z"},
+])
+_UNIT_FACTORS_JSON = json.dumps({"m": 1, "cm": 100, "mm": 1000, "in": 39.3701, "ft": 3.28084})
+
+# "Show dimensions" -- real measurements, not guessed ones: positions every
+# DIMENSION_HOTSPOTS dot at an actual bounding-box corner via model-viewer's
+# updateHotspot() (getDimensions()/getBoundingBoxCenter(), both in meters),
+# writes each edge's length into its "dim" hotspot as text, and draws an
+# SVG line through the 6 dots on top of the model -- queryHotspot() gives
+# each dot's live on-screen (canvas) position, which a 'camera-change'
+# listener keeps re-reading so the line tracks the model while the user
+# orbits. Runs on model switch too (awaiting model-viewer's own `load`
+# event if the new model isn't ready yet, same pattern as the texture
+# upload and reset-camera callbacks above) and re-fires whenever Python
+# updates the hotspots prop, so newly-added dots have something to attach
+# the line to. Only one 'camera-change' listener is ever live on the
+# element -- each run replaces the previous one via the viewer's own
+# _dimsRedraw property rather than piling listeners up.
+clientside_callback(
+    """
+    function(checked, unit, _hotspots, _modelKey) {
+        const viewer = document.getElementById('""" + _id("viewer") + """');
+        const container = document.getElementById('""" + _id("viewer-container") + """');
+        if (!viewer || !container) { return window.dash_clientside.no_update; }
+
+        if (viewer._dimsRedraw) {
+            viewer.removeEventListener('camera-change', viewer._dimsRedraw);
+            viewer._dimsRedraw = null;
+        }
+        let svg = container.querySelector('svg.model-viewer-dims-overlay');
+        if (!checked) {
+            if (svg) { svg.remove(); }
+            return window.dash_clientside.no_update;
+        }
+
+        const DOTS = """ + _DOT_SLOTS_JSON + """;
+        const EDGES = """ + _DIM_EDGES_JSON + """;
+        const UNIT_FACTORS = """ + _UNIT_FACTORS_JSON + """;
+
+        function drawLines() {
+            if (!svg) {
+                svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('class', 'model-viewer-dims-overlay');
+                container.appendChild(svg);
+            }
+            let d = '';
+            DOTS.forEach(function(slot, i) {
+                const q = typeof viewer.queryHotspot === 'function' ? viewer.queryHotspot(slot) : null;
+                if (!q || !q.canvasPosition) { return; }
+                d += (i === 0 ? 'M ' : 'L ') + q.canvasPosition.x + ' ' + q.canvasPosition.y + ' ';
+            });
+            svg.innerHTML = '<path d="' + d + '" />';
+        }
+
+        function place() {
+            if (!viewer.model || typeof viewer.getDimensions !== 'function') { return; }
+            const dim = viewer.getDimensions();
+            const c = viewer.getBoundingBoxCenter();
+            const hx = dim.x / 2, hy = dim.y / 2, hz = dim.z / 2;
+            const corners = [
+                {x: c.x + hx, y: c.y - hy, z: c.z + hz},
+                {x: c.x + hx, y: c.y - hy, z: c.z - hz},
+                {x: c.x + hx, y: c.y + hy, z: c.z - hz},
+                {x: c.x - hx, y: c.y + hy, z: c.z - hz},
+                {x: c.x - hx, y: c.y - hy, z: c.z - hz},
+                {x: c.x - hx, y: c.y - hy, z: c.z + hz},
+            ];
+            DOTS.forEach(function(slot, i) {
+                const p = corners[i];
+                viewer.updateHotspot({name: slot, position: p.x + ' ' + p.y + ' ' + p.z});
+            });
+            const factor = UNIT_FACTORS[unit] || UNIT_FACTORS.cm;
+            const axisLength = {x: dim.x, y: dim.y, z: dim.z};
+            EDGES.forEach(function(edge) {
+                const a = corners[edge.from], b = corners[edge.to];
+                const mid = {x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2};
+                viewer.updateHotspot({name: edge.slot, position: mid.x + ' ' + mid.y + ' ' + mid.z});
+                const el = viewer.querySelector('[slot="' + edge.slot + '"]');
+                if (el) { el.textContent = (axisLength[edge.axis] * factor).toFixed(1) + ' ' + unit; }
+            });
+            drawLines();
+        }
+
+        viewer._dimsRedraw = drawLines;
+        viewer.addEventListener('camera-change', viewer._dimsRedraw);
+        viewer.addEventListener('load', place, {once: true});
+        if (viewer.model) { place(); }
+
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output(_id("dims-signal"), "data"),
+    Input(_id("dims-toggle"), "checked"),
+    Input(_id("dims-units"), "value"),
+    Input(_id("viewer"), "hotspots"),
+    Input(_id("model-picker"), "value"),
     prevent_initial_call=True,
 )

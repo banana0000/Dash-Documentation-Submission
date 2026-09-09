@@ -70,3 +70,55 @@
 .model-viewer-page div[style*="width: fit-content"]:has(> #model-viewer-upload-texture) {
     width: 100% !important;
 }
+
+/* "Show dimensions" (model_viewer/showcase.py's dims-toggle) -- the 6
+   corner ".dot" hotspots and 5 edge-length ".dim" labels are positioned
+   in 3D by the clientside _update_dimensions callback; this only styles
+   their appearance. .dim's own text comes from that callback too (e.g.
+   "34.2 cm"), so it has no content here beyond the box around it. */
+.model-viewer-page model-viewer .dot {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    padding: 0;
+    background: #0891b2;
+    border: 2px solid #e0fbff;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.35);
+    pointer-events: none;
+}
+
+.model-viewer-page model-viewer .dim {
+    display: block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #0891b2;
+    color: #e0fbff;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+
+/* The connecting line drawn between the 6 .dot hotspots -- see drawLines()
+   in the same clientside callback. Absolutely filling
+   #model-viewer-viewer-container (that Paper is already
+   position:relative), above the model but below the zoom buttons
+   (z-index 5). */
+.model-viewer-page svg.model-viewer-dims-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.model-viewer-page svg.model-viewer-dims-overlay path {
+    fill: none;
+    stroke: #0891b2;
+    stroke-width: 2px;
+    stroke-dasharray: 4 3;
+}
