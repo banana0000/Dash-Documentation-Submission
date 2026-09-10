@@ -122,3 +122,31 @@
     stroke-width: 2px;
     stroke-dasharray: 4 3;
 }
+
+/* Phones and narrow tablets: the sidebar-beside-viewer row (built with
+   wrap="nowrap" in showcase.py, which is right on a desktop) would leave
+   the viewer only ~150px of a 390px screen, so stack instead -- controls
+   above, viewer below, both full width. !important because Mantine writes
+   the Stack's 220px width and the Paper's flex/height as inline styles,
+   which a plain rule can't reach. The viewer gets a fixed viewport-
+   relative height here since the embedded page passes it a
+   `calc(100vh - ...)` sized for a full-height column, which is far too
+   tall once it sits *under* the controls rather than beside them.
+   model-viewer's own touchAction default ("pan-y") is already the right
+   mobile behavior -- a vertical swipe scrolls the page, a horizontal drag
+   orbits the model -- so it needs nothing here. */
+@media (max-width: 768px) {
+    .model-viewer-page #model-viewer-layout {
+        flex-wrap: wrap !important;
+    }
+
+    .model-viewer-page #model-viewer-controls {
+        width: 100% !important;
+    }
+
+    .model-viewer-page #model-viewer-viewer-container {
+        flex-basis: 100% !important;
+        height: 55vh !important;
+        min-height: 300px;
+    }
+}

@@ -178,7 +178,8 @@ def build_model_viewer_showcase(height="70vh"):
     default_model = MODELS[default_key]
 
     controls = dmc.Stack(
-        [
+        id=_id("controls"),
+        children=[
             dmc.Select(
                 id=_id("model-picker"),
                 label="Model",
@@ -302,8 +303,15 @@ def build_model_viewer_showcase(height="70vh"):
         },
     )
 
+    # wrap="nowrap" keeps the sidebar beside the viewer on a desktop-width
+    # screen; a max-width media query in model-viewer.css flips this row to
+    # wrap and both children to full width on a phone, so the controls sit
+    # above the viewer instead of squeezing it into what's left of a 390px
+    # screen. Hence the ids on both -- the media query needs something
+    # stable to outrank Mantine's own inline width/flex styles.
     return dmc.Group(
-        [
+        id=_id("layout"),
+        children=[
             controls, viewer,
             dcc.Store(id=_id("reset-camera-signal")),
             dcc.Store(id=_id("texture-signal")),
