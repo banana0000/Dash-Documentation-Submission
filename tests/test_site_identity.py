@@ -31,7 +31,7 @@ from lib.constants import (
 # Spelled out rather than imported, so that renaming the constant cannot
 # silently rename the site. Changing the brand should require changing this
 # line, deliberately.
-EXPECTED_BRAND = "Color Picker"
+EXPECTED_BRAND = "Dash Showcases — live playgrounds for 2plot.ai components"
 
 
 def test_brand_constant_is_the_agreed_identity():
@@ -71,7 +71,7 @@ def test_the_viewer_brand_chip_is_not_a_framework_default(client):
 
     from conftest import BROWSER_ACCEPT
 
-    page = client.get("/examples/color-picker/llms.txt", accept=BROWSER_ACCEPT).text
+    page = client.get("/color-picker/llms.txt", accept=BROWSER_ACCEPT).text
     # The banner is templated markup, so the brand arrives HTML-escaped.
     # Comparing the raw string here would fail for a reason that has nothing
     # to do with identity.

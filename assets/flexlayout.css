@@ -1,11 +1,11 @@
-/* FlexLayout Playground (components/flexlayout_showcase.py) -- cyan accent
+/* FlexLayout Playground (docs/flex_layout/showcase.py) -- cyan accent
    throughout: every dmc Button/ActionIcon/Switch, and flexlayout-react's own
    selected-tab/splitter/drag-indicator colors (its own CSS custom
    properties, documented at https://github.com/caplin/FlexLayout). Scoped to
-   .flexlayout-page (put on the outermost container by both
-   pages/flex-layout.py and the standalone flexlayout_app.py) so it doesn't
-   leak into the rest of the site. Loaded automatically for both entry
-   points -- both serve the repo-root assets/ folder. */
+   .flexlayout-page (put on the outermost container by both the docs
+   page's `component` and the standalone examples/flexlayout_app.py) so it
+   doesn't leak into the rest of the site. Loaded for both entry points --
+   both serve the repo-root assets/ folder. */
 .flexlayout-page .mantine-Button-root,
 .flexlayout-page .mantine-ActionIcon-root {
     --button-bg: #0891b2 !important;

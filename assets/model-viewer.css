@@ -1,18 +1,16 @@
-/* 3D Model Viewer (model_viewer/showcase.py) -- every dmc Button, ActionIcon,
+/* 3D Model Viewer (docs/model_viewer/showcase.py) -- every dmc Button, ActionIcon,
    Slider and Switch on this page is cyan (matching the /flex-layout page's
    accent, assets/flexlayout.css) instead of the site's default primary
    color -- was bordó/burgundy, changed to cyan "mindenhol" per follow-up
    request. Scoped to .model-viewer-page (put on the outermost container by
-   both pages/model-viewer.py and the standalone model_viewer/app.py) so it
-   doesn't leak into the rest of the site. Overrides the CSS custom
+   both the docs page's `component` and the standalone
+   examples/model_viewer_app.py) so it doesn't leak into the rest of the site. Overrides the CSS custom
    properties Mantine's Button/ActionIcon variants read from
    (mantine-Button-root / mantine-ActionIcon-root both carry a
    `data-variant` attribute -- a stable Mantine styles-API hook), rather
-   than a dmc `color` prop. Loaded automatically here for the embedded
-   /model-viewer page; the standalone app in model_viewer/ keeps its own
-   identical copy at model_viewer/assets/model-viewer.css so it stays
-   deployable on its own, the same reason roamly/assets/ exists alongside
-   this repo-root assets/ folder. */
+   than a dmc `color` prop. Loaded for the /model-viewer docs page and for
+   the standalone app alike: examples/model_viewer_app.py serves this same
+   repo-root assets/ folder, so there is one copy of this file. */
 .model-viewer-page .mantine-Button-root,
 .model-viewer-page .mantine-ActionIcon-root {
     --button-bg: #0891b2 !important;

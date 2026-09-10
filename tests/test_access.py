@@ -29,7 +29,7 @@ from conftest import CRAWLER_UA
 from lib import access, auth, hub_client, page_tiers
 
 GATED_PAGE = "/networks"
-PUBLIC_PAGE = "/examples/color-picker"
+PUBLIC_PAGE = "/color-picker"
 VALID_KEY = "k2p_testref_testsig"
 
 

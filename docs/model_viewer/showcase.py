@@ -1,19 +1,14 @@
 """3D model viewer built on dash_model_viewer (Google's <model-viewer> web
 component, wrapped for Dash by 2plot.ai).
 
-Shared between two entry points, the same shape as components/excalidraw_kpi.py.
-Lives in its own model_viewer/ directory (like roamly/), not components/:
+Shared between two entry points, the same shape as docs/excalidraw/kpi_mockup.py:
 
-| Where                 | Notes                                            |
-|-----------------------|---------------------------------------------------|
-| pages/model-viewer.py | Embedded page on the main site at /model-viewer    |
-| model_viewer/app.py   | Fully independent standalone app, own Dash(__name__) instance, own port |
-
-model_viewer/app.py imports this module bare (``from showcase import ...``)
-so the whole model_viewer/ directory stays deployable on its own; the
-embedded page imports it as ``model_viewer.showcase`` instead, since it
-runs from the repo root where model_viewer/ is a package (see
-model_viewer/__init__.py).
+| Where                             | Notes                                                |
+|-----------------------------------|------------------------------------------------------|
+| docs/model_viewer/model_viewer.md | The /model-viewer docs page, which embeds the        |
+|                                   | module-level ``component`` below through ``.. exec::``|
+| examples/model_viewer_app.py      | Fully independent standalone app, own Dash(__name__) |
+|                                   | instance, own port                                   |
 
 Element ids are prefixed ``model-viewer-`` so this page's callbacks never
 collide with ids on any other page of the same running multi-page app.
@@ -21,9 +16,9 @@ collide with ids on any other page of the same running multi-page app.
 Model files are Khronos/Google's own public glTF samples, hosted on
 raw.githubusercontent.com / modelviewer.dev's shared-assets CDN -- free, no
 API key, no local files to ship in this repo. Every control's color (cyan)
-comes from model-viewer.css -- the repo-root assets/ copy for the embedded
-page, model_viewer/assets/ for the standalone app -- scoped to the
-``PAGE_CLASS`` wrapper below, not a dmc `color` prop.
+comes from assets/model-viewer.css, scoped to the ``PAGE_CLASS`` wrapper
+below, not a dmc `color` prop; the standalone app serves the same repo-root
+assets/ folder, so one stylesheet covers both entry points.
 """
 import json
 import re
@@ -109,9 +104,9 @@ TONE_MAPPINGS = ["neutral", "aces", "agx", "reinhard", "cineon", "linear", "none
 _ID_PREFIX = "model-viewer-"
 
 # Every dmc Button/ActionIcon under a .model-viewer-page ancestor is cyan
-# -- see assets/model-viewer.css. Both entry points
-# (pages/model-viewer.py and model_viewer/app.py) put this class on their
-# outermost container, so it's page-wide rather than per-button here.
+# -- see assets/model-viewer.css. Both entry points (the `component` below
+# and examples/model_viewer_app.py) put this class on their outermost
+# container, so it's page-wide rather than per-button here.
 PAGE_CLASS = "model-viewer-page"
 
 _RADIUS_RE = re.compile(r"^([\d.]+)(.*)$")
@@ -205,7 +200,9 @@ def build_model_viewer_showcase(height="70vh"):
             ),
         ],
         gap="md",
-        w=220,
+        # Full width when stacked above the viewer (below `md`), the fixed
+        # 220px sidebar beside it from `md` up -- see the Flex below.
+        w={"base": "100%", "md": 220},
         style={"flexShrink": 0},
     )
 
@@ -246,7 +243,14 @@ def build_model_viewer_showcase(height="70vh"):
         withBorder=True,
         radius="md",
         style={
-            "height": height, "flex": 1, "minWidth": 0, "overflow": "hidden",
+            "height": height,
+            # "1 1 auto", NOT "1": `flex: 1` is shorthand for a 0% flex-basis,
+            # which is a width in the row layout but a HEIGHT once the Flex
+            # below stacks into a column on phones -- the Paper collapsed to
+            # 0px tall and <model-viewer> rendered nothing. An auto basis
+            # keeps `height` in charge when stacked; in the row the single
+            # growing item still fills the space beside the fixed sidebar.
+            "flex": "1 1 auto", "width": "100%", "minWidth": 0, "overflow": "hidden",
             # Mid-gray, not near-black -- shadowIntensity renders a dark
             # contact shadow under the model, which has no visible contrast
             # against a near-black background.
@@ -254,13 +258,20 @@ def build_model_viewer_showcase(height="70vh"):
         },
     )
 
-    return dmc.Group(
+    # Responsive row: on phones and small tablets (below Mantine's `md`,
+    # 62em) the controls stack ABOVE the viewer at full width instead of
+    # being squeezed beside it; from `md` up it is the original side-by-side
+    # layout -- fixed-width controls, viewer filling the rest. dmc.Flex's
+    # direction/align take breakpoint dicts, so no CSS or callback needed.
+    return dmc.Flex(
         [
             controls, viewer,
             dcc.Store(id=_id("reset-camera-signal")),
             dcc.Store(id=_id("texture-signal")),
         ],
-        align="flex-start", gap="sm", wrap="nowrap",
+        direction={"base": "column", "md": "row"},
+        align={"base": "stretch", "md": "flex-start"},
+        gap="sm",
     )
 
 
@@ -390,3 +401,9 @@ clientside_callback(
     Input(_id("upload-texture"), "contents"),
     prevent_initial_call=True,
 )
+
+
+# What `.. exec::docs.model_viewer.showcase` renders on the /model-viewer docs
+# page. The PAGE_CLASS wrapper scopes assets/model-viewer.css's cyan accent to
+# this demo alone.
+component = dmc.Box(build_model_viewer_showcase(height="70vh"), className=PAGE_CLASS)

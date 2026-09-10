@@ -108,31 +108,31 @@ dash-improve-my-llms[flask]>=2.3.4
 # dash-improve-my-llms[quart]>=2.3.4     # Dash 4.4+ Quart backend
 # dash-improve-my-llms[all]>=2.3.4       # all three
 
-# The /excalidraw page (components/excalidraw_kpi.py, pages/excalidraw.py,
-# and the standalone excalidraw_app.py). The GitHub build, not PyPI's 0.0.4 --
-# see components/excalidraw_kpi.py's module docstring for the difference.
+# The /excalidraw showcase (docs/excalidraw/kpi_mockup.py, embedded by
+# docs/excalidraw/excalidraw.md, and the standalone examples/excalidraw_app.py).
+# The GitHub build, not PyPI's 0.0.4 -- see the module docstring for why.
 dash-excalidraw @ git+https://github.com/pip-install-python/dash-excalidraw.git
 
-# The /dash-flow page (components/dash_flow_playground.py, pages/dash-flow.py,
-# and the standalone dash_flow_app.py). Node/edge diagram component (React
-# Flow), from PyPI.
+# The /dash-flow showcase (docs/dash_flow/playground.py, embedded by
+# docs/dash_flow/dash_flow.md, and the standalone examples/dash_flow_app.py).
+# Node/edge diagram component (React Flow), from PyPI.
 dash_flows>=1.3.0
 
-# The /roamly page (pages/roamly.py links out to it) and its standalone app
-# in roamly/ (own Dash instance, own port -- run with `python roamly/app.py`).
+# The /roamly showcase (docs/roamly/*.py) and its standalone app in
+# examples/roamly/ (own Dash instance, own port -- `python examples/roamly/app.py`).
 dash_leaflet2>=0.2.2
 dash_image_gallery>=0.0.1
 dash_mui_charts>=1.4.0
 
-# The /model-viewer page (pages/model-viewer.py) and its standalone app in
-# model_viewer/ (own Dash instance, own port -- run with
-# `python model_viewer/app.py`). Google's <model-viewer> web component
+# The /model-viewer showcase (docs/model_viewer/showcase.py, embedded by
+# docs/model_viewer/model_viewer.md, and the standalone
+# examples/model_viewer_app.py). Google's <model-viewer> web component
 # wrapped for Dash, from PyPI.
 dash_model_viewer>=0.0.1
 
-# The /flex-layout page (components/flexlayout_showcase.py,
-# pages/flex-layout.py, and the standalone flexlayout_app.py). An IDE-style
-# docking layout -- flexlayout-react wrapped for Dash, from PyPI.
+# The /flex-layout showcase (docs/flex_layout/showcase.py, embedded by
+# docs/flex_layout/flex_layout.md, and the standalone examples/flexlayout_app.py).
+# An IDE-style docking layout -- flexlayout-react wrapped for Dash, from PyPI.
 dash-flexlayout>=0.0.1
 
 # Production Servers

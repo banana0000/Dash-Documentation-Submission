@@ -194,7 +194,7 @@ jobs:
           # real WSGI worker — different import path, different working
           # directory, no test-client conveniences.
           curl -sf http://127.0.0.1:8550/ > /dev/null
-          curl -sf http://127.0.0.1:8550/networks > /dev/null
+          curl -sf http://127.0.0.1:8550/color-picker > /dev/null
           # The battery, against the same server a satellite deploys.
           python3 scripts/network_smoke.py --base-url http://127.0.0.1:8550
 

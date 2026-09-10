@@ -1,7 +1,7 @@
 {
-  "name": "Color Picker",
-  "short_name": "Color Picker",
-  "description": "A Dash color picker with four switchable shapes: a wheel, a flower, a ring, and a photo.",
+  "name": "Dash Showcases — live playgrounds for 2plot.ai components",
+  "short_name": "Dash Showcases",
+  "description": "Six working Dash showcases: a color picker, a dash-flows playground, an Excalidraw KPI mockup, a FlexLayout dashboard, a 3D model viewer and the Roamly booking mockup.",
   "icons": [
     { "src": "/assets/favicon/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/assets/favicon/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

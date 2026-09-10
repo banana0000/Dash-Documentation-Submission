@@ -3,7 +3,17 @@ from dash import Output, Input, State, clientside_callback, html, get_asset_url
 from dash_iconify import DashIconify
 
 from components.backend_badge import create_backend_badge
+from components.navbar import search_data
 from lib.backend import get_backend_info
+from lib.constants import (
+    GITHUB_URL,
+    HEADER_HEIGHT,
+    LOGO_ASSET,
+    LOGO_STYLE,
+    WORDMARK,
+    WORDMARK_COLOR,
+    WORDMARK_VISIBLE_FROM,
+)
 
 
 def create_link(icon, href):
@@ -21,7 +31,9 @@ def create_link(icon, href):
 
 
 def create_search(data):
-    """Create searchable dropdown for component navigation"""
+    """Searchable dropdown for page navigation — the sidebar's pages and
+    nothing else (components/navbar.search_data decides: never Home, never a
+    hidden-tier page)."""
     return dmc.Select(
         id="select-component",
         placeholder="Search pages...",
@@ -31,11 +43,7 @@ def create_search(data):
         size="sm",
         nothingFoundMessage="No pages found",
         leftSection=DashIconify(icon="mingcute:search-3-line", width=18),
-        data=[
-            {"label": component["name"], "value": component["path"]}
-            for component in data
-            if component["name"] not in ["Home", "Not found 404"]
-        ],
+        data=search_data(data),
         visibleFrom="sm",
         comboboxProps={"zIndex": 2000},
         styles={
@@ -96,18 +104,30 @@ def create_header(data):
                             size="sm",
                             visibleFrom="md",
                         ),
+                        # Logo + wordmark, both from lib/constants.py so a
+                        # rename of the site never has to touch this file.
                         dmc.Anchor(
                             dmc.Group(
                                 [
                                     html.Img(
-                                        src=get_asset_url('ddb.png'),
-                                        style={'height': '36px', 'width': '36px'}
+                                        src=get_asset_url(LOGO_ASSET),
+                                        alt="",
+                                        style=LOGO_STYLE,
+                                    ),
+                                    dmc.Text(
+                                        WORDMARK,
+                                        size="lg",
+                                        fw=700,
+                                        c=WORDMARK_COLOR,
+                                        id="dash-docs-title",
+                                        visibleFrom=WORDMARK_VISIBLE_FROM,
                                     ),
                                 ],
                                 gap="sm",
                             ),
                             href="/",
                             underline=False,
+                            **{"aria-label": f"{WORDMARK} — home"},
                         ),
                     ],
                     gap="md",
@@ -119,10 +139,7 @@ def create_header(data):
                         dmc.Box(create_backend_badge(), visibleFrom="sm"),
                         dmc.Box(_create_openapi_link(), visibleFrom="md"),
                         create_search(data),
-                        create_link(
-                            "radix-icons:github-logo",
-                            "https://github.com/banana0000/Dash-Documentation-Submission",
-                        ),
+                        create_link("radix-icons:github-logo", GITHUB_URL),
                         dmc.ActionIcon(
                             [
                                 DashIconify(
@@ -146,7 +163,7 @@ def create_header(data):
                 ),
             ],
             justify="space-between",
-            h=70,
+            h=HEADER_HEIGHT,
             px="xl",
         ),
     )

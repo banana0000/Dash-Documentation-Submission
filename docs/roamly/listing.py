@@ -1,26 +1,22 @@
+"""Roamly -- the Listing detail section: photo gallery, booking card and a
+dash_leaflet2 map with its own draw/edit toolbar, for one stay at a time.
+
+Embedded on the /roamly docs page through `.. exec::docs.roamly.listing`.
+The standalone app (examples/roamly/pages/listing.py) reads the stay from
+the URL (`/listing/<id>`); the docs page is a single route, so here a
+Select picks the stay instead, and the cards in the Stays section above
+(docs/roamly/stays.py) write into that same Select when clicked.
+
+Every id carries the ``rm-listing-`` prefix so the standalone app's bare
+names never collide with this site's own.
+"""
 import dash_mantine_components as dmc
-from dash import callback, Input, Output, register_page
+from dash import Input, Output, callback, html
 from dash_iconify import DashIconify
 import dash_leaflet2 as dl
 import dash_image_gallery as dig
 
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-from roamly.data import get_listing
-
-NAME = "Roamly: Listing *"
-DESCRIPTION = "A single Roamly stay's detail page, embedded on the main site -- see pages/roamly.py."
-
-register_page(
-    __name__,
-    path_template="/roamly/listing/<listing_id>",
-    name=NAME,
-    title=PAGE_TITLE_PREFIX + NAME,
-    description=DESCRIPTION,
-    image_url=OG_IMAGE_URL,
-    icon="tabler:map-2",
-)
-
-LLMS_DOC = f"# {NAME}\n\n> {DESCRIPTION}\n"
+from examples.roamly.data import get_listing, list_listings
 
 # Esri for both modes, kept as one provider rather than mixing in CartoDB
 # for dark -- Esri has no dark *street* map, so dark mode is its Dark Gray
@@ -32,11 +28,6 @@ _DARK_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World
 _LIGHT_ATTRIBUTION = "Tiles © Esri — Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, GIS User Community"
 _DARK_ATTRIBUTION = "Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors, GIS User Community"
 
-# Every id on this page carries this prefix -- Roamly's standalone version
-# (roamly/pages/listing.py) uses the bare names, which would collide with
-# this site's own ids (e.g. plain "mantine-provider" isn't one here, but a
-# second copy of this page's own ids would be if either page were ever
-# rendered twice) and keeps the two copies' callbacks unambiguous.
 _ID_PREFIX = "rm-listing-"
 
 
@@ -44,58 +35,8 @@ def _id(name):
     return f"{_ID_PREFIX}{name}"
 
 
-_ACTIVE_GRADIENT = {"from": "blue", "to": "green", "deg": 45}
-
-
-def roamly_nav():
-    return dmc.Group(
-        [
-            dmc.Anchor(
-                dmc.Group(
-                    [
-                        dmc.ThemeIcon(
-                            DashIconify(icon="tabler:map-2", width=16),
-                            size=26, radius="xl", variant="filled", color="green",
-                        ),
-                        dmc.Text(
-                            "Roamly", fw=700, size="md",
-                            variant="gradient",
-                            gradient={"from": "blue", "to": "green", "deg": 45},
-                        ),
-                    ],
-                    gap=6,
-                ),
-                href="/roamly", underline=False,
-            ),
-            dmc.Group(
-                [
-                    # A listing page is reached by browsing from Stays, so
-                    # that's the tab that reads active here -- there's no
-                    # third "Listing" tab of its own.
-                    dmc.Anchor(
-                        dmc.Button("Stays", size="xs", radius="xl", variant="gradient", gradient=_ACTIVE_GRADIENT),
-                        href="/roamly",
-                    ),
-                    dmc.Anchor(dmc.Button("Host dashboard", variant="light", size="xs", radius="xl"), href="/roamly/host"),
-                ],
-                gap="xs",
-            ),
-        ],
-        justify="space-between", mb="md",
-    )
-
-
 def not_found():
-    return dmc.Container(
-        dmc.Stack(
-            [
-                dmc.Title("Listing not found", order=2),
-                dmc.Anchor(dmc.Button("Back to stays"), href="/roamly"),
-            ],
-            align="center", py="xl",
-        ),
-        size="sm",
-    )
+    return dmc.Alert("Listing not found.", color="red", variant="light")
 
 
 def stat(icon, label):
@@ -105,11 +46,10 @@ def stat(icon, label):
     )
 
 
-def layout(listing_id=None, **kwargs):
-    listing = get_listing(listing_id)
-    if listing is None:
-        return not_found()
-
+def listing_detail(listing, dark=False):
+    """The full detail view for one stay: summary, gallery + booking card
+    side by side, then the map. `dark` picks the Esri tile set so the map
+    follows the site's color scheme at render time."""
     gallery_items = [
         {"original": url, "thumbnail": url} for url in listing["gallery"]
     ]
@@ -138,8 +78,8 @@ def layout(listing_id=None, **kwargs):
                 [
                     dl.TileLayer(
                         id=_id("map-tiles"),
-                        url=_LIGHT_TILES,
-                        attribution=_LIGHT_ATTRIBUTION,
+                        url=_DARK_TILES if dark else _LIGHT_TILES,
+                        attribution=_DARK_ATTRIBUTION if dark else _LIGHT_ATTRIBUTION,
                     ),
                     dl.Marker(
                         position=listing["coords"],
@@ -221,45 +161,62 @@ def layout(listing_id=None, **kwargs):
         h="100%",
     )
 
-    return dmc.Container(
+    return dmc.Stack(
         [
-            roamly_nav(),
-            dmc.Anchor(
-                dmc.Group([DashIconify(icon="tabler:arrow-left", width=16), dmc.Text("Back to stays", size="sm")], gap=4),
-                href="/roamly", underline=False, c="dimmed", mb="md",
-            ),
             dmc.Stack(
                 [
-                    dmc.Title(listing["title"], order=2),
+                    dmc.Title(listing["title"], order=3, style={"margin": 0}),
                     dmc.Text(listing["location"], c="dimmed"),
                 ],
-                gap=2, mb="md",
+                gap=2,
             ),
-            dmc.Card(dmc.Text(listing["summary"]), withBorder=True, mb="md"),
+            dmc.Card(dmc.Text(listing["summary"]), withBorder=True),
             dmc.Grid(
                 [
                     dmc.GridCol(gallery_panel, span={"base": 12, "md": 8}),
                     dmc.GridCol(booking_panel, span={"base": 12, "md": 4}),
                 ],
                 align="stretch",
-                mb="md",
             ),
             map_panel,
         ],
-        size="lg", py="md",
+        gap="md",
     )
 
 
-@callback(
-    Output(_id("map-tiles"), "url"),
-    Output(_id("map-tiles"), "attribution"),
-    # This site's own MantineProvider id (components/appshell.py), not
-    # Roamly's standalone "mantine-provider" -- the embed follows this
-    # site's dark-mode toggle, since Roamly's own header/toggle aren't part
-    # of the embed.
-    Input("m2d-mantine-provider", "forceColorScheme"),
+_LISTINGS = list_listings()
+_DEFAULT_ID = _LISTINGS[0]["id"]
+
+component = dmc.Stack(
+    [
+        dmc.Select(
+            id="rm-listing-picker",
+            label="Stay",
+            description="Pick a stay here, or click one of the cards in the Stays section above.",
+            data=[{"label": listing["title"], "value": listing["id"]} for listing in _LISTINGS],
+            value=_DEFAULT_ID,
+            clearable=False,
+            allowDeselect=False,
+            maw=360,
+        ),
+        html.Div(listing_detail(get_listing(_DEFAULT_ID)), id="rm-listing-detail"),
+    ],
+    gap="md",
 )
-def _tile_layer_for_scheme(scheme):
-    if scheme == "dark":
-        return _DARK_TILES, _DARK_ATTRIBUTION
-    return _LIGHT_TILES, _LIGHT_ATTRIBUTION
+
+
+@callback(
+    Output("rm-listing-detail", "children"),
+    Input("rm-listing-picker", "value"),
+    # This site's MantineProvider id (components/appshell.py): the map's
+    # Esri tile set follows the docs site's dark-mode toggle. The whole
+    # detail re-renders on a scheme change rather than swapping only the
+    # tile URL, so a stay picked while in dark mode also comes up dark.
+    Input("m2d-mantine-provider", "forceColorScheme"),
+    prevent_initial_call=True,
+)
+def _render_detail(listing_id, scheme):
+    listing = get_listing(listing_id)
+    if listing is None:
+        return not_found()
+    return listing_detail(listing, dark=(scheme == "dark"))

@@ -1,12 +1,14 @@
 """Dash Flow playground: decision-tree / process / org-chart diagrams built with
 dash-flows (2plot.ai / React Flow), editable in the browser.
 
-Shared between two entry points, the same shape as components/excalidraw_kpi.py:
+Shared between two entry points, the same shape as docs/excalidraw/kpi_mockup.py:
 
-| Where               | Notes                                            |
-|---------------------|---------------------------------------------------|
-| pages/dash-flow.py  | Embedded page on the main site at /dash-flow       |
-| dash_flow_app.py    | Fully independent standalone app, own Dash(__name__) instance, own port |
+| Where                       | Notes                                                    |
+|-----------------------------|----------------------------------------------------------|
+| docs/dash_flow/dash_flow.md | The /dash-flow docs page, which embeds the module-level   |
+|                             | ``component`` below through ``.. exec::``                 |
+| examples/dash_flow_app.py   | Fully independent standalone app, own Dash(__name__)     |
+|                             | instance, own port                                       |
 
 Element ids are prefixed ``flow-playground-`` so this page's callbacks never
 collide with ids on any other page of the same running multi-page app.
@@ -217,7 +219,9 @@ def build_flow_playground(height="70vh", include_layout_picker=True):
             ),
         ],
         gap="sm",
-        w=_SIDEBAR_WIDTH,
+        # Full width when stacked above the canvas (below `md`), the fixed
+        # sidebar width beside it from `md` up -- see the Flex below.
+        w={"base": "100%", "md": _SIDEBAR_WIDTH},
         style={"flexShrink": 0},
     )
 
@@ -259,12 +263,23 @@ def build_flow_playground(height="70vh", include_layout_picker=True):
         ),
         withBorder=True,
         radius="md",
-        style={"height": height, "flex": 1, "minWidth": 0, "overflow": "auto"},
+        # "1 1 auto", not "1": a 0% flex-basis is a height once the Flex below
+        # stacks into a column on phones, and the canvas collapsed to 0px.
+        # See the matching note in docs/model_viewer/showcase.py.
+        style={"height": height, "flex": "1 1 auto", "width": "100%", "minWidth": 0, "overflow": "auto"},
     )
 
     return dmc.Stack(
         [
-            dmc.Group([controls, canvas], align="flex-start", gap="sm", wrap="nowrap"),
+            # Responsive row: below Mantine's `md` (62em) the controls stack
+            # above the canvas at full width; from `md` up it is the
+            # side-by-side layout. Same pattern as docs/model_viewer/showcase.py.
+            dmc.Flex(
+                [controls, canvas],
+                direction={"base": "column", "md": "row"},
+                align={"base": "stretch", "md": "flex-start"},
+                gap="sm",
+            ),
             dmc.Modal(
                 [
                     dmc.ColorPicker(id=_id("color-picker"), format="hex", fullWidth=True, swatchesPerRow=7),
@@ -521,3 +536,10 @@ clientside_callback(
     Input(_id("editing-node-id"), "data"),
     prevent_initial_call=True,
 )
+
+
+# What `.. exec::docs.dash_flow.playground` renders on the /dash-flow docs
+# page. 70vh rather than the old full-viewport calc(): the demo sits inside a
+# documentation column under a title, a TOC and prose, so it shares the
+# viewport instead of owning it.
+component = build_flow_playground(height="70vh")

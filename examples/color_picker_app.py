@@ -1,3 +1,20 @@
+"""Standalone entry point for the Color Picker.
+
+Run from the repo root:
+
+    python examples/color_picker_app.py     # then open http://127.0.0.1:8560
+
+A fully independent single-file Dash app -- its own Dash(__name__)
+instance, its own /llms.txt Flask route, no imports from this repo's
+pages/, components/ or docs/. The docs page at /color-picker
+(docs/color_picker/color_picker.md) embeds a separate, id-prefixed copy of
+the same picker (docs/color_picker/picker.py).
+
+The only thing it borrows from the repo is the assets/ folder: the app
+serves the repo-root assets/ (assets/color-picker.css keeps the fixed-pixel
+shapes centred and scaled on narrow viewports) instead of a non-existent
+examples/assets/.
+"""
 import colorsys
 import math
 from pathlib import Path
@@ -230,7 +247,11 @@ _code_tabs = dmc.CodeHighlightTabs(
     withExpandButton=True,
 )
 
-app = Dash(__name__)
+# Serve the repo-root assets/ folder (assets/color-picker.css) from inside
+# examples/ -- see the module docstring.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+app = Dash(__name__, assets_folder=str(REPO_ROOT / "assets"))
+app.title = "Color Picker"
 
 
 @app.server.route("/llms.txt")

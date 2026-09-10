@@ -1,13 +1,13 @@
-# Color Picker
+# Dash Showcases
 
 <p align="center">
   <img src="https://cdn.2plot.ai/github_assets/dark_mode_2plot.png" alt="2plot" width="640">
 </p>
 
-> A Dash color picker with four switchable shapes — a continuous HSV wheel, clickable petals, a ring of swatches, and a photo you sample like an eyedropper — built on top of the [Dash Documentation Boilerplate](https://github.com/pip-install-python/Dash-Documentation-Boilerplate) template. By [banana0000](https://github.com/banana0000).
+> **Dash Showcases — live playgrounds for 2plot.ai components.** Six working Dash showcases on one documentation site — a four-shape color picker, a dash-flows diagram playground, an Excalidraw KPI mockup, a dash-flexlayout docking layout, a 3D model viewer and Roamly, a stay-booking mockup — each with a live demo, a source walkthrough and a standalone app. By [banana0000](https://github.com/banana0000), built on the [Dash Documentation Boilerplate](https://github.com/pip-install-python/Dash-Documentation-Boilerplate) template.
 
 [![Dash](https://img.shields.io/badge/Dash-4.4.1-blue.svg)](https://dash.plotly.com/)
-[![DMC](https://img.shields.io/badge/DMC-2.7.0-teal.svg)](https://www.dash-mantine-components.com/)
+[![DMC](https://img.shields.io/badge/DMC-2.8.0-teal.svg)](https://www.dash-mantine-components.com/)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -15,63 +15,60 @@
 
 ## What this is
 
-One color picker, four shapes. A `dmc.SegmentedControl` switches between:
+A catalogue of six Dash showcases, each one a real, running app embedded in
+its own documentation page: the live demo at the top, the prose that explains
+how it works underneath, and the full source at the bottom. Every showcase
+also ships a standalone entry point in `examples/` that renders the same
+component on its own port.
 
-- **Wheel** — a continuous HSV wheel, hover to preview and click to lock a color, like an eyedropper
-- **Flower** — two layered rings of six petals each, twelve distinct colors rather than six colors in two lightnesses
-- **Ring** — twelve preset swatches arranged in a circle
-- **Photo** — a generated, photo-like image you sample pixel by pixel
-
-All four feed the same center swatch and hex readout, and stay mounted in the DOM at once — switching shapes never destroys a picker's state. The whole thing scales down and stays centered on narrow viewports (`assets/color-picker.css`) since the shapes are fixed-pixel absolute layouts that don't reflow like text.
-
-The picker ships in two places in this repo:
-
-| Where | File | Notes |
-|---|---|---|
-| Docs demo | [`docs/color-picker/color-picker.md`](docs/color-picker/color-picker.md) | Registered at `/examples/color-picker`, walks through how it works |
-| Standalone app | [`color_picker_app.py`](color_picker_app.py) | Fully independent single-file Dash app, no imports from `pages/` or `components/` |
-
----
-
-## How it works
-
-Every shape separates **preview** (hover, entirely client-side) from **lock-in** (click, resolved server-side), so the two never fight over the same `Output`.
-
-**Wheel** is a `dcc.Graph` showing a static HSV raster (hue by angle, saturation by radius, value fixed at 1) built once at import time with `colorsys.hsv_to_rgb`. Plotly's native hover tooltip is off (`hoverinfo="none"`) — a clientside callback reads `hoverData`, redoes the hue/saturation math in JavaScript, and paints a semi-transparent preview overlay on the center swatch. **Photo** is a generated raster with no such formula, so it ships its real per-pixel hex as `customdata` instead, and the same clientside callback reads that directly when the photo is what's being hovered:
-
-```python
-go.Image(z=_PHOTO_RGBA, customdata=_PHOTO_HEX, hoverinfo="none")
-```
-
-Clicking either graph fires `clickData` — Python re-derives the color (a formula for the wheel, a table lookup for the photo) and *locks* it into the swatch. The marker showing the last pick is moved with `Patch()` instead of rebuilding the whole figure, so a click ships ~40 bytes back instead of re-serializing the raster.
-
-**Flower** and **Ring** are plain `html.Div`s carrying a pattern-matching id — `{"type": "picker-petal", "color": <hex>}` or `{"type": "picker-ring", "color": <hex>}` — positioned with plain arithmetic (`math.sin`/`math.cos` for the ring, CSS `rotate()` for the petals). Both pull from the same `_evenly_spaced_hues()` generator (the flower's inner layer offset by half a step from its own outer layer), so "more colors" means one palette function shared by two shapes, not two palettes to keep in sync. They also carry a `data-picker-color` attribute; a second clientside callback binds native `mouseenter`/`mouseleave` listeners to preview them the same way as the wheel and photo. One server-side callback listens to all four shapes' click-style inputs at once and reads `ctx.triggered_id` to know which one fired — no `dcc.Store` needed anywhere.
-
-See [`docs/color-picker/color-picker.md`](docs/color-picker/color-picker.md) for the full walkthrough.
+| Showcase | Docs page | Built on | Standalone app | Port |
+|---|---|---|---|---|
+| **Color Picker** — one picker, four shapes: a continuous HSV wheel, clickable petals, a ring of swatches, and a photo you sample like an eyedropper | [`/color-picker`](docs/color_picker/color_picker.md) | Dash, Plotly, `dmc.SegmentedControl` | `examples/color_picker_app.py` | 8560 |
+| **Dash Flow Playground** — decision-tree, process and org-chart presets; add, rename and recolour nodes; ELK auto-layout; PNG export | [`/dash-flow`](docs/dash_flow/dash_flow.md) | [dash-flows](https://flows.2plot.dev) (React Flow) | `examples/dash_flow_app.py` | 8070 |
+| **Excalidraw KPI Mockup** — a KPI dashboard on a hand-drawn canvas, with a Library of cards, donuts, charts and swatches, built to export a 1920x1080 Power BI background | [`/excalidraw`](docs/excalidraw/excalidraw.md) | [dash-excalidraw](https://excalidraw.2plot.dev) | `examples/excalidraw_app.py` | 8060 |
+| **FlexLayout Playground** — an IDE-style docking layout holding a small sales dashboard; drag tabs, split panels, resize with the splitters | [`/flex-layout`](docs/flex_layout/flex_layout.md) | [dash-flexlayout](https://flexlayout.2plot.dev) (flexlayout-react) | `examples/flexlayout_app.py` | 8080 |
+| **3D Model Viewer** — eight glTF sample models; orbit, zoom, tone mapping, shadows, AR, and a live texture upload | [`/model-viewer`](docs/model_viewer/model_viewer.md) | [dash-model-viewer](https://modelviewer.2plot.dev) (Google model-viewer) | `examples/model_viewer_app.py` | 8081 |
+| **Roamly** — a house-only stay booking mockup: listings grid with a globe, a stay page with a gallery and a map, and a host dashboard | [`/roamly`](docs/roamly/roamly.md) | [dash-leaflet2](https://leaflet.2plot.dev), [dash-mui-charts](https://muicharts.2plot.dev), dash-image-gallery | `examples/roamly/app.py` | 8870 |
 
 ---
 
 ## Running it
 
-### Full site (docs demo)
+### The documentation site
 
 ```bash
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 pip install --no-deps markdown2dash==0.1.2   # markdown2dash pins an old gunicorn; installed without its deps
-npm install
 
 ./scripts/dev.sh          # or: python run.py
 ```
 
-Visit **http://localhost:8559**, then go to `/examples/color-picker` (the docs demo with source walkthrough).
+Visit **http://localhost:8559**. The sidebar lists the six showcases under
+**Showcases**; every one opens in place, like any other page of the site.
 
-### Standalone
+### A standalone app
+
+Run any of them from the repo root — for example:
 
 ```bash
-python color_picker_app.py
+python examples/dash_flow_app.py     # http://localhost:8070
+python examples/roamly/app.py        # http://localhost:8870
 ```
 
-Serves on **http://localhost:8560** — a single-file app with no dependency on the rest of this repo.
+See [`examples/README.md`](examples/README.md) for the full list, the ports,
+and how the standalone apps share their builders with the docs pages.
+
+### Tests
+
+```bash
+pip install pytest httpx
+pytest tests -q
+```
+
+The suite boots `run.py` itself and checks every registered page: it loads,
+it serves real prose to crawlers, its `/<page>/llms.txt` inlines the source,
+and its sidebar entry navigates in the same window.
 
 ---
 
@@ -79,63 +76,87 @@ Serves on **http://localhost:8560** — a single-file app with no dependency on 
 
 ```
 .
-├── color_picker_app.py            # Standalone single-file version
-├── assets/
-│   └── color-picker.css           # Responsive scaling + centering for the docs demo
-├── docs/
-│   └── color-picker/
-│       ├── color-picker.md        # Docs demo at /examples/color-picker
-│       └── picker.py              # Example embedded in the docs demo
-└── ...                            # Dash Documentation Boilerplate scaffolding
-                                    # (multi-page routing, theming, backends)
+├── docs/                            # One folder per showcase — the whole site's content
+│   ├── color_picker/
+│   │   ├── color_picker.md          # The page: frontmatter, prose, .. exec:: / .. source:: directives
+│   │   └── picker.py                # The demo: builders, callbacks, and a module-level `component`
+│   ├── dash_flow/       (dash_flow.md, playground.py)
+│   ├── excalidraw/      (excalidraw.md, kpi_mockup.py)
+│   ├── flex_layout/     (flex_layout.md, showcase.py)
+│   ├── model_viewer/    (model_viewer.md, showcase.py)
+│   └── roamly/          (roamly.md, stays.py, listing.py, host.py)
+│
+├── examples/                        # The same showcases as standalone apps
+│   ├── README.md
+│   ├── color_picker_app.py          # Single file, imports nothing from the repo
+│   ├── dash_flow_app.py             # Imports docs/dash_flow/playground.py
+│   ├── excalidraw_app.py            # Imports docs/excalidraw/kpi_mockup.py
+│   ├── flexlayout_app.py            # Imports docs/flex_layout/showcase.py
+│   ├── model_viewer_app.py          # Imports docs/model_viewer/showcase.py
+│   └── roamly/                      # A complete multi-page app of its own (app.py, data.py, pages/, assets/)
+│
+├── assets/                          # Site CSS/JS, plus one scoped stylesheet per showcase
+│   ├── color-picker.css             # .picker-responsive
+│   ├── dash-flow-playground.css     # #flow-playground-flow
+│   ├── excalidraw-*.css             # #excalidraw
+│   ├── flexlayout.css               # .flexlayout-page
+│   ├── model-viewer.css             # .model-viewer-page
+│   └── roamly-embed.css             # dash-mui-charts in dark mode
+│
+├── pages/                           # home.md / home.py (the catalogue index) + markdown.py (the docs loader)
+├── components/                      # AppShell, header, sidebar — template code, driven by lib/constants.py
+├── lib/                             # Site identity, navigation contract, backends, AI/LLM + SEO plumbing
+├── tests/                           # pytest suite (boots run.py; runs on Flask, FastAPI and Quart in CI)
+├── scripts/                         # dev.sh, post-deploy smoke batteries
+└── run.py                           # Application entry point
 ```
 
-This repo is forked from the [Dash Documentation Boilerplate](https://github.com/pip-install-python/Dash-Documentation-Boilerplate) template, which supplies the surrounding app shell — navigation, theming, pluggable Flask/FastAPI/Quart backends, and the markdown-driven page loader that registers `docs/color-picker/color-picker.md` as a page automatically. See that project for details on the template itself.
+The shell — multi-page routing, theming, the pluggable Flask/FastAPI/Quart
+backends, the markdown page loader and the AI/LLM surfaces — comes from the
+[Dash Documentation Boilerplate](https://github.com/pip-install-python/Dash-Documentation-Boilerplate).
+See that project for the template itself.
 
 ---
 
-## Also in this repo
+## How a showcase is put together
 
-An Excalidraw canvas tool — unrelated to the color picker, built on [`dash-excalidraw`](https://github.com/pip-install-python/dash-excalidraw). Listed under **Apps** in the site's nav (opens in a new tab) at `/excalidraw`.
+Each showcase follows the boilerplate's one-folder-per-page convention, the
+same shape as every `*.2plot.dev` component site:
 
-- Opens with one worked flowchart example — faint (half-opacity) node fills, labels set in Excalidraw's own hand-drawn font — floating directly on the desk, no artboard rectangle behind it
-- KPI cards/donuts/charts/gradient swatches, plus a small hand-drawn scene (sun, mountains, a tree, a couple of birds), all sit in Excalidraw's own Library sidebar to drag out as needed
-- "Reset the canvas" and "Save to.../Export image..." are enabled in Excalidraw's own hamburger menu — real clear/save actions, not custom-built ones
-- The Help dialog's keyboard-shortcut pills are styled yellow-on-black (`assets/excalidraw-help-buttons.css`)
-- The 1920×1080 artboard used for the Power-BI-report-background workflow (see the module docstring for the export steps) is still available — via `artboard_frame()` — just not placed on the canvas by default any more
+1. **`docs/<slug>/<slug>.md`** is the page. Its frontmatter names the page,
+   its route, its icon, and where it sits in the sidebar (`category: Showcases`,
+   `order: n`). The prose walks through how the demo works.
+2. **`docs/<slug>/<module>.py`** is the demo. It holds the builder functions
+   and the callbacks, and ends with a module-level `component` — the thing
+   `.. exec::docs.<slug>.<module>` renders. `.. source::` shows the same file,
+   collapsed, further down the page.
+3. **`examples/<slug>_app.py`** is the standalone entry point. It imports the
+   same builder, so the two can never drift apart, and serves the repo-root
+   `assets/` folder so the showcase's stylesheet loads in both places.
 
-The template-building logic lives in `components/excalidraw_kpi.py`, shared by two entry points:
-
-| Where | Notes |
-|---|---|
-| `pages/excalidraw.py` | Embedded page on the main site at `/excalidraw` |
-| `excalidraw_app.py` | Fully independent standalone app, own `Dash(__name__)` instance, port 8060 |
-
-The main site installs `dash-excalidraw` from `requirements.txt` (the GitHub build, not the older PyPI release — see `components/excalidraw_kpi.py`'s module docstring for why). To run the standalone version on its own:
-
-```bash
-pip install "git+https://github.com/pip-install-python/dash-excalidraw.git"
-python excalidraw_app.py
-```
-
-Roamly — a house-only stay/property booking platform mockup, unrelated to the color picker. Listed under **Apps** in the site's nav (opens in a new tab) at `/roamly`.
-
-Unlike the Excalidraw and Dash Flow tools above, Roamly is not a component embedded into this site's own multi-page app — it's a full standalone Dash app with its own `AppShell`, theme, dark-mode toggle and page router, so running it inline here would collide with this site's own element ids. `/roamly` is a short link-out page instead of an embed; the app itself lives in `roamly/` at the repo root:
-
-| Page | Route | Notes |
-|---|---|---|
-| Listings | `/` | Grid of 4 demo stays (`data.py`), plus a wide Mercator world overview map (Plotly `Scattergeo`) pinning all of them below the grid |
-| Listing detail | `/listing/<id>` | Full-width description and image gallery (`dash_image_gallery`), a booking card with a `dmc.TimePicker` check-in field and host info, and a full-width `dash_leaflet2` map with its own draw/edit toolbar (`dl.EditControl`) |
-| Host dashboard | `/host` | A host's listings with `dash_mui_charts` view-count charts, styled to stay readable in Roamly's own dark mode (the chart library doesn't follow Mantine's color scheme on its own) |
-
-```bash
-pip install -r requirements.txt   # pulls in dash_leaflet2, dash_image_gallery, dash_mui_charts
-python roamly/app.py
-```
-
-Serves on **http://localhost:8870** — its own `Dash(__name__)` instance, no imports from this repo's `pages/` or `components/`.
+Adding a seventh showcase is a folder, a markdown file and a Python file; the
+sidebar and the search box pick it up from the frontmatter.
 
 ---
+
+## AI/LLM integration
+
+Powered by [dash-improve-my-llms](https://pypi.org/project/dash-improve-my-llms/):
+every page serves its prose — `.. source::` files inlined — at
+`/<page>/llms.txt`, and `/sitemap.xml` and `/robots.txt` are generated
+automatically. Paste a page URL into ChatGPT or Claude and they read the
+documentation directly.
+
+---
+
+## Credits
+
+- The six showcases, their prose and their standalone apps:
+  [banana0000](https://github.com/banana0000) — original submission at
+  [banana0000/Dash-Documentation-Submission](https://github.com/banana0000/Dash-Documentation-Submission).
+- The documentation shell:
+  [Dash Documentation Boilerplate](https://github.com/pip-install-python/Dash-Documentation-Boilerplate)
+  by [Pip Install Python](https://2plot.dev).
 
 ## License
 

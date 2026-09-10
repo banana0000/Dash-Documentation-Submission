@@ -12,14 +12,17 @@ from conftest import CRAWLER_UA, STUB_MARKER, main_body
 # invisible in a smoke test that only iterates whatever did register — the
 # suite would pass with half the site missing.
 #
-# This is the trimmed color-picker submission, not the full boilerplate
-# template: the only pages that ship are the home page, the color-picker
-# docs demo, the Excalidraw KPI mockup, and the Dash Flow playground.
+# This is the showcase catalogue, not the full boilerplate template: the
+# pages that ship are the home page and one docs page per showcase
+# (docs/<slug>/<slug>.md).
 REQUIRED_PATHS = {
     "/",
-    "/examples/color-picker",
-    "/excalidraw",
+    "/color-picker",
     "/dash-flow",
+    "/excalidraw",
+    "/flex-layout",
+    "/model-viewer",
+    "/roamly",
 }
 
 
@@ -63,10 +66,10 @@ def test_prose_renders_as_html_not_literal_markdown(client):
 
     Before 2.1 these came through as `<p>---</p>`, literal `[text](url)` and
     pipe characters. Checked on the color-picker docs page because it is the
-    most heavily formatted one in this trimmed repo (two `.. source::`
+    most heavily formatted one in this repo (two `.. source::`
     expansions plus the prose's own code fences).
     """
-    body = main_body(client.get("/examples/color-picker", user_agent=CRAWLER_UA).text)
+    body = main_body(client.get("/color-picker", user_agent=CRAWLER_UA).text)
 
     assert body.count("<pre") >= 5, "expected code fences to render as <pre> blocks"
     assert "<hr" in body, "expected horizontal rules to render as <hr>"
