@@ -179,19 +179,6 @@ def build_flow_playground(height="70vh", include_layout_picker=True):
                         position="top",
                         withArrow=True,
                     ),
-                    dmc.Tooltip(
-                        dmc.ActionIcon(
-                            DashIconify(icon="mdi:palette-outline", width=18),
-                            id=_id("recolor-btn"),
-                            n_clicks=0,
-                            variant="light",
-                            size="lg",
-                            disabled=True,
-                        ),
-                        label="Cycle node color",
-                        position="top",
-                        withArrow=True,
-                    ),
                 ],
                 gap="xs",
                 wrap="nowrap",
@@ -280,27 +267,6 @@ def build_flow_playground(height="70vh", include_layout_picker=True):
                 align={"base": "stretch", "md": "flex-start"},
                 gap="sm",
             ),
-            dmc.Modal(
-                [
-                    dmc.ColorPicker(id=_id("color-picker"), format="hex", fullWidth=True, swatchesPerRow=7),
-                    dmc.Group(
-                        [
-                            dmc.Button("Reset", id=_id("reset-color-btn"), n_clicks=0, variant="default"),
-                            dmc.Button("Apply", id=_id("apply-color-btn"), n_clicks=0, variant="filled"),
-                        ],
-                        justify="flex-end",
-                        gap="sm",
-                        mt="sm",
-                    ),
-                ],
-                id=_id("color-modal"),
-                title="Node color",
-                opened=False,
-                size="sm",
-            ),
-            # The node's color when the modal opened -- lets "Reset" revert
-            # the picker without needing to re-open the modal.
-            dcc.Store(id=_id("color-modal-original"), data=None),
             dcc.Store(id=_id("node-counter"), data=0),
             dcc.Store(id=_id("editing-node-id"), data=None),
             # sink for the focus/select-text clientside callback below
@@ -314,16 +280,15 @@ def build_flow_playground(height="70vh", include_layout_picker=True):
     Output(_id("node-label-input"), "value"),
     Output(_id("node-label-input"), "disabled"),
     Output(_id("save-label-btn"), "disabled"),
-    Output(_id("recolor-btn"), "disabled"),
     Output(_id("editing-node-id"), "data"),
     Input(_id("flow"), "doubleClickedNode"),
     prevent_initial_call=True,
 )
 def _start_editing_label(node):
     if not node or not node.get("id"):
-        return no_update, no_update, no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update
     label = (node.get("data") or {}).get("label", "")
-    return label, False, False, False, node["id"]
+    return label, False, False, node["id"]
 
 
 @callback(
@@ -429,54 +394,6 @@ def _toggle_edge_animation(animated, current_edges):
     # everything else -- the dashed-line "animated" flag and each edge's
     # own stroke color/label stay put, this only undoes _animate_edge.
     return [{k: v for k, v in e.items() if k not in ("type", "data")} for e in current_edges]
-
-
-@callback(
-    Output(_id("color-modal"), "opened", allow_duplicate=True),
-    Output(_id("color-picker"), "value", allow_duplicate=True),
-    Output(_id("color-modal-original"), "data"),
-    Input(_id("recolor-btn"), "n_clicks"),
-    State(_id("flow"), "nodes"),
-    State(_id("editing-node-id"), "data"),
-    prevent_initial_call=True,
-)
-def _open_color_modal(_n_clicks, current_nodes, editing_id):
-    if not editing_id or not current_nodes:
-        return no_update, no_update, no_update
-    editing_node = next((n for n in current_nodes if n["id"] == editing_id), None)
-    current_color = (editing_node or {}).get("style", {}).get("background", "#4263eb")
-    return True, current_color, current_color
-
-
-@callback(
-    Output(_id("color-picker"), "value", allow_duplicate=True),
-    Input(_id("reset-color-btn"), "n_clicks"),
-    State(_id("color-modal-original"), "data"),
-    prevent_initial_call=True,
-)
-def _reset_color_picker(_n_clicks, original_color):
-    if not original_color:
-        return no_update
-    return original_color
-
-
-@callback(
-    Output(_id("flow"), "nodes", allow_duplicate=True),
-    Output(_id("color-modal"), "opened", allow_duplicate=True),
-    Input(_id("apply-color-btn"), "n_clicks"),
-    State(_id("color-picker"), "value"),
-    State(_id("flow"), "nodes"),
-    State(_id("editing-node-id"), "data"),
-    prevent_initial_call=True,
-)
-def _apply_node_color(_n_clicks, color, current_nodes, editing_id):
-    if not color or not editing_id or not current_nodes:
-        return no_update, no_update
-    updated_nodes = [
-        {**n, "style": {**n["style"], "background": color}} if n["id"] == editing_id else n
-        for n in current_nodes
-    ]
-    return updated_nodes, False
 
 
 @callback(

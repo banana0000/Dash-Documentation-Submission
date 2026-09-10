@@ -1,6 +1,6 @@
 ---
 name: Dash Flow Playground
-description: A dash-flows playground — swap between a decision tree, a process diagram and an org chart, add and recolour nodes, and auto-layout the graph with ELK.
+description: A dash-flows playground — swap between a decision tree, a process diagram and an org chart, add and rename nodes, and auto-layout the graph with ELK.
 endpoint: /dash-flow
 package: dash_flows
 icon: mdi:graph-outline
@@ -17,7 +17,7 @@ order: 2
 A playground for [dash-flows](https://flows.2plot.dev) — 2plot.ai's Dash wrapper
 around [React Flow](https://reactflow.dev). Three presets (a feature-request
 decision tree, a simple linear process, and an org chart) each swap in a full
-nodes/edges pair; from there you can add nodes, rename and recolour them,
+nodes/edges pair; from there you can add nodes, rename them,
 toggle edge animation, auto-layout the whole graph, and export it as a PNG.
 
 Everything on this page is a real, running `DashFlows` component. Drag nodes
@@ -41,9 +41,8 @@ Three presets — a feature-request decision tree, a simple linear process, and
 an org chart — each swap in a full nodes/edges pair through the Select in the
 sidebar. **Add node** appends a new node chained off the last one in the
 current graph, cycling through a fixed palette. Double-clicking a node opens
-its label in the text field for editing; the save icon writes it back onto
-that node without touching anything else, and the palette icon opens a
-`dmc.ColorPicker` modal for the node's background.
+its label in the text field for editing, and the save icon writes it back onto
+that node without touching anything else.
 
 All of the diagram state — nodes, edges, the node counter, which node is being
 edited — lives in the `DashFlows` component's own props and a few small

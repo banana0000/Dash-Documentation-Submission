@@ -11,7 +11,7 @@ Every showcase on this site is a real, running Dash app embedded in its own docu
 | Showcase | What it is | Built on |
 |---|---|---|
 | [Color Picker](/color-picker) | One picker, four shapes — a continuous HSV wheel, clickable petals, a ring of swatches, and a photo you sample like an eyedropper | Dash, Plotly, `dmc.SegmentedControl` |
-| [Dash Flow Playground](/dash-flow) | Decision-tree, process and org-chart presets; add, rename and recolour nodes; ELK auto-layout; PNG export | [dash-flows](https://flows.2plot.dev) (React Flow) |
+| [Dash Flow Playground](/dash-flow) | Decision-tree, process and org-chart presets; add and rename nodes; ELK auto-layout; PNG export | [dash-flows](https://flows.2plot.dev) (React Flow) |
 | [Excalidraw KPI Mockup](/excalidraw) | A KPI-dashboard mockup on a hand-drawn canvas, with a Library of cards, donuts, charts and swatches, built to export a 1920x1080 Power BI background | [dash-excalidraw](https://excalidraw.2plot.dev) |
 | [FlexLayout Playground](/flex-layout) | An IDE-style docking layout holding a small sales dashboard — drag tabs, split panels, resize with the splitters | [dash-flexlayout](https://flexlayout.2plot.dev) (flexlayout-react) |
 | [3D Model Viewer](/model-viewer) | Eight glTF sample models; orbit, zoom, tone mapping, shadows, AR, and a live texture upload | [dash-model-viewer](https://modelviewer.2plot.dev) (Google model-viewer) |
