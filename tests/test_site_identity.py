@@ -31,7 +31,7 @@ from lib.constants import (
 # Spelled out rather than imported, so that renaming the constant cannot
 # silently rename the site. Changing the brand should require changing this
 # line, deliberately.
-EXPECTED_BRAND = "Color Picker"
+EXPECTED_BRAND = "Dash Showcases — live playgrounds for 2plot.ai components"
 
 
 def test_brand_constant_is_the_agreed_identity():
@@ -44,7 +44,7 @@ def test_app_title_is_the_brand(app):
 
 
 def test_home_prose_opens_with_the_brand():
-    first = (REPO_ROOT / "pages" / "home.md").read_text().splitlines()[0]
+    first = (REPO_ROOT / "pages" / "home.md").read_text(encoding="utf-8").splitlines()[0]
     assert first == f"# {EXPECTED_BRAND}"
 
 
@@ -71,7 +71,7 @@ def test_the_viewer_brand_chip_is_not_a_framework_default(client):
 
     from conftest import BROWSER_ACCEPT
 
-    page = client.get("/examples/color-picker/llms.txt", accept=BROWSER_ACCEPT).text
+    page = client.get("/color-picker/llms.txt", accept=BROWSER_ACCEPT).text
     # The banner is templated markup, so the brand arrives HTML-escaped.
     # Comparing the raw string here would fail for a reason that has nothing
     # to do with identity.
@@ -106,7 +106,7 @@ def test_no_surface_falls_back_to_a_generic_title():
 
 def test_readme_and_docs_agree_with_the_brand():
     """A README that names the site differently is the next drift."""
-    readme = (REPO_ROOT / "README.md").read_text()
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
     assert EXPECTED_BRAND in readme, "README.md does not state the site brand"
 
 
@@ -165,7 +165,7 @@ def test_no_surface_still_carries_the_fork_source_brand():
     offenders = []
     for path in ("lib/constants.py", "templates/index.html", "pages/home.md",
                  "assets/favicon/site.webmanifest"):
-        text = (REPO_ROOT / path).read_text()
+        text = (REPO_ROOT / path).read_text(encoding="utf-8")
         # The constants file documents the old value in a comment explaining
         # the fix; that is the one legitimate mention.
         stripped = re.sub(r"#.*", "", text) if path.endswith(".py") else text
@@ -177,5 +177,5 @@ def test_no_surface_still_carries_the_fork_source_brand():
 
 def test_home_markdown_is_not_a_stale_copy_of_the_old_opening():
     """`# Welcome to:` was the old H1 — an identity that named nothing."""
-    body = Path(REPO_ROOT / "pages" / "home.md").read_text()
+    body = Path(REPO_ROOT / "pages" / "home.md").read_text(encoding="utf-8")
     assert "# Welcome to:" not in body

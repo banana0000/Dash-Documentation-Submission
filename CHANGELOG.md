@@ -5,6 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-09-09
+
+### Changed — from "Color Picker" to a catalogue of six showcases
+
+The submission grew from one showcase to six while its structure stayed the
+shape of the first: the site was still branded **Color Picker**, `/` bounced
+every visitor to that one page, and the five later showcases were `pages/*.py`
+modules listed under an "Apps" sidebar section that opened each of them in a
+**new browser tab** (`target="_blank"`). This release re-homes the same work in
+the boilerplate's own convention — one `docs/<slug>/` folder per page — so
+every showcase is a documentation page that navigates in place.
+
+- **Every showcase is a docs page.** `docs/<slug>/<slug>.md` carries the
+  frontmatter, the prose and the `.. exec::` / `.. source::` directives;
+  `docs/<slug>/<module>.py` carries the builder, its callbacks and the
+  module-level `component` the page renders. The builders moved verbatim from
+  `components/` (dash_flow_playground, excalidraw_kpi, flexlayout_showcase)
+  and `model_viewer/showcase.py`; the four `pages/*.py` app pages they served
+  are retired, their prose folded into the markdown.
+- **Roamly's three routes became three sections of one page.** The Stays grid
+  and globe, the Listing detail (gallery, booking card, dash-leaflet2 map) and
+  the Host dashboard are three `.. exec::` demos on `/roamly`. The standalone
+  app's `/listing/<id>` navigation becomes an in-page selection: a card click
+  writes into the Listing detail's Select and scrolls to it. The standalone
+  app itself is unchanged.
+- **Standalone apps live in `examples/`.** The four root-level `*_app.py`
+  files, `model_viewer/app.py` and the whole `roamly/` package moved there;
+  each app puts the repo root on `sys.path` and serves the repo-root
+  `assets/` folder, so one scoped stylesheet per showcase covers both entry
+  points (the duplicate `model_viewer/assets/model-viewer.css` is gone).
+  `examples/README.md` lists the commands and ports.
+- **The sidebar is frontmatter-driven.** `components/navbar.py` is the
+  boilerplate's navigation contract: sections come from each page's
+  `category:` / `order:` in the order of `lib.constants.CATEGORY_ORDER`, and
+  nothing opens in a new tab. The hand-written `page_order` / `apps_paths`
+  lists are gone. `components/header.py` reads the repo URL and the wordmark
+  from `lib/constants.py`; the typewriter script types whatever the header
+  rendered instead of a hard-coded "Dash Docs".
+- **Site identity.** `SITE_BRAND` is *Dash Showcases — live playgrounds for
+  2plot.ai components*; `SITE_SHORT_NAME`, `WORDMARK`, `templates/index.html`,
+  the web manifest, `pages/home.md` and the README all say the same thing.
+  `/` is a real catalogue page now, not a redirect.
+- **Routes.** The color picker moved from `/examples/color-picker` to
+  `/color-picker`, beside `/dash-flow`, `/excalidraw`, `/flex-layout`,
+  `/model-viewer` and `/roamly`. Tests and the smoke battery follow.
+- `render.yaml`: Roamly's service points at `examples/roamly`; the separate
+  model-viewer service is dropped, since that app now imports its builder
+  from `docs/` rather than shipping as a self-contained package.
+- CI's production-boot probe fetches `/color-picker` instead of `/networks`,
+  a boilerplate page this fork never had.
+
 ## [1.2.5] - 2026-08-01
 
 ### Fixed — `scripts/smoke_live.py` failed CD on healthy sites

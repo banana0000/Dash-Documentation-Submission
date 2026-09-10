@@ -30,7 +30,7 @@ def test_every_page_has_its_own_llms_txt(client, page_paths):
 
 
 def test_page_llms_txt_carries_the_page_prose(client):
-    body = client.get("/examples/color-picker/llms.txt").text
+    body = client.get("/color-picker/llms.txt").text
     assert "SegmentedControl" in body
     assert "HSV wheel" in body, "page prose did not reach /<page>/llms.txt"
 
@@ -41,7 +41,7 @@ def test_source_directives_are_expanded_in_llms_txt(client):
     The audience for /<page>/llms.txt is someone pasting it into a chat
     window; a directive reference is useless to them.
     """
-    body = client.get("/examples/color-picker/llms.txt").text
+    body = client.get("/color-picker/llms.txt").text
     assert ".. source::" not in body, "an unexpanded directive leaked into the prose"
     assert "def switch_shape(shape):" in body, "the referenced source file was not inlined"
 
@@ -123,7 +123,7 @@ def test_exactly_one_canonical_tag_for_browsers(client):
     the `dv-banner` chrome check below: match the markup, not the words, so a
     file may legitimately discuss what it is being checked for.
     """
-    html = re.sub(r"<!--.*?-->", "", client.get("/examples/color-picker").text, flags=re.S)
+    html = re.sub(r"<!--.*?-->", "", client.get("/color-picker").text, flags=re.S)
     tags = re.findall(r'<link[^>]+rel="canonical"[^>]*>', html)
     assert len(tags) == 1, f"expected exactly one canonical element, got {tags}"
 
@@ -146,7 +146,7 @@ def test_healthz(client):
 # HTML response to the next agent that asks.
 # ---------------------------------------------------------------------------
 
-PAGE_DOC = "/examples/color-picker/llms.txt"
+PAGE_DOC = "/color-picker/llms.txt"
 
 # Chrome is detected as rendered markup rather than as a bare class name. A
 # Markdown document may legitimately discuss `dv-banner`; it can never contain

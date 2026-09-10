@@ -40,7 +40,7 @@ def test_docs_directory_is_not_empty():
 
 @pytest.mark.parametrize("path", DOCS, ids=lambda p: p.name)
 def test_frontmatter_is_complete(path):
-    metadata, _content = frontmatter.parse(path.read_text())
+    metadata, _content = frontmatter.parse(path.read_text(encoding="utf-8"))
     missing = [key for key in REQUIRED_FRONTMATTER if not metadata.get(key)]
     assert not missing, f"{path.name} is missing frontmatter keys: {missing}"
     assert metadata["endpoint"].startswith("/"), "endpoint must be an absolute path"
@@ -49,7 +49,7 @@ def test_frontmatter_is_complete(path):
 def test_endpoints_are_unique():
     seen: dict[str, str] = {}
     for path in DOCS:
-        metadata, _ = frontmatter.parse(path.read_text())
+        metadata, _ = frontmatter.parse(path.read_text(encoding="utf-8"))
         endpoint = metadata.get("endpoint")
         assert endpoint not in seen, (
             f"{path.name} and {seen[endpoint]} both register {endpoint}; the second "
@@ -60,7 +60,7 @@ def test_endpoints_are_unique():
 
 @pytest.mark.parametrize("path", DOCS, ids=lambda p: p.name)
 def test_exec_directives_point_at_importable_modules(path):
-    _metadata, content = frontmatter.parse(path.read_text())
+    _metadata, content = frontmatter.parse(path.read_text(encoding="utf-8"))
     for match in EXEC_DIRECTIVE.finditer(live_directives(content)):
         module = match.group(1).strip().split()[0]
         try:
@@ -71,7 +71,7 @@ def test_exec_directives_point_at_importable_modules(path):
 
 @pytest.mark.parametrize("path", DOCS, ids=lambda p: p.name)
 def test_source_directives_point_at_real_files(path):
-    _metadata, content = frontmatter.parse(path.read_text())
+    _metadata, content = frontmatter.parse(path.read_text(encoding="utf-8"))
     for match in SOURCE_DIRECTIVE.finditer(live_directives(content)):
         target = REPO_ROOT / match.group(1).strip()
         assert target.is_file(), f"{path.name}: `.. source::` target does not exist: {target}"
@@ -90,7 +90,7 @@ def test_headings_render_and_match_their_toc_anchors(path, app_module):
     # because registering a page requires an instantiated app.
     parse = sys.modules["pages.markdown"].parse
 
-    _metadata, content = frontmatter.parse(path.read_text())
+    _metadata, content = frontmatter.parse(path.read_text(encoding="utf-8"))
     layout = parse(content)  # raises if a heading breaks the renderer
 
     # className="m2d-heading" is what the renderer stamps on headings it

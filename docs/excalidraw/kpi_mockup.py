@@ -1,10 +1,10 @@
 """Shared Excalidraw KPI-dashboard-mockup builder.
 
-Used by two entry points: `excalidraw_app.py` (a fully standalone
-`Dash(__name__)` app on its own port) and `pages/excalidraw.py` (this same
-component embedded as a page in the main multi-page site). Split out so
-importing one entry point never instantiates the other's `Dash()` app as a
-side effect -- the same shape as `components/color_picker_widget.py` used to
+Used by two entry points: `examples/excalidraw_app.py` (a fully standalone
+`Dash(__name__)` app on its own port) and `docs/excalidraw/excalidraw.md`
+(the /excalidraw docs page, which embeds the module-level `component` at
+the bottom of this file through `.. exec::`). Split out so importing one
+entry point never instantiates the other's `Dash()` app as a side effect -- the same shape as `components/color_picker_widget.py` used to
 sit relative to the color picker's page and docs demo.
 
 The drawing is meant to end up as a Power BI report page background image, so
@@ -815,3 +815,9 @@ def build_excalidraw_with_elements(component_id, elements, opacity, height="85vh
 
 def build_excalidraw(component_id, opacity, height="85vh"):
     return build_excalidraw_with_elements(component_id, build_canvas_elements(opacity), opacity, height=height)
+
+
+# What `.. exec::docs.excalidraw.kpi_mockup` renders on the /excalidraw docs
+# page. The component id stays "excalidraw": assets/excalidraw-*.css scope
+# their rules to #excalidraw, for both this page and the standalone app.
+component = build_excalidraw("excalidraw", DEFAULT_OPACITY, height="75vh")

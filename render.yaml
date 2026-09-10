@@ -81,35 +81,23 @@ services:
       mountPath: /var/data
       sizeGB: 1
 
-  # Roamly -- the standalone app in roamly/ (see README.md's "Also in this
-  # repo" section). Its own service, own URL, own deploy lifecycle: no
-  # shared env vars or disk with the boilerplate above, since it doesn't
-  # import anything from this repo's root (pages/, components/, lib/).
+  # Roamly -- the standalone app in examples/roamly/ (see README.md's
+  # "Standalone apps" section). Its own service, own URL, own deploy
+  # lifecycle: no shared env vars or disk with the site above, since it
+  # doesn't import anything from this repo's root (pages/, components/,
+  # lib/, docs/). The other standalone apps in examples/ import their
+  # builders from docs/, so they run from the repo root rather than as
+  # separate services -- see examples/README.md.
   - type: web
     name: roamly
     runtime: python
     plan: starter
     region: oregon
     branch: main
-    rootDir: roamly
+    rootDir: examples/roamly
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:server -b 0.0.0.0:$PORT --workers 2 --timeout 60
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.0"
 
-  # 3D Model Viewer -- the standalone app in model_viewer/. Same shape as
-  # Roamly above: its own service, own URL, no shared env vars or disk,
-  # doesn't import anything from this repo's root.
-  - type: web
-    name: model-viewer
-    runtime: python
-    plan: starter
-    region: oregon
-    branch: main
-    rootDir: model_viewer
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:server -b 0.0.0.0:$PORT --workers 2 --timeout 60
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.12.0"

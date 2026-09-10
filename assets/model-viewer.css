@@ -1,18 +1,16 @@
-/* 3D Model Viewer (model_viewer/showcase.py) -- every dmc Button, ActionIcon,
+/* 3D Model Viewer (docs/model_viewer/showcase.py) -- every dmc Button, ActionIcon,
    Slider and Switch on this page is cyan (matching the /flex-layout page's
    accent, assets/flexlayout.css) instead of the site's default primary
    color -- was bordó/burgundy, changed to cyan "mindenhol" per follow-up
    request. Scoped to .model-viewer-page (put on the outermost container by
-   both pages/model-viewer.py and the standalone model_viewer/app.py) so it
-   doesn't leak into the rest of the site. Overrides the CSS custom
+   both the docs page's `component` and the standalone
+   examples/model_viewer_app.py) so it doesn't leak into the rest of the site. Overrides the CSS custom
    properties Mantine's Button/ActionIcon variants read from
    (mantine-Button-root / mantine-ActionIcon-root both carry a
    `data-variant` attribute -- a stable Mantine styles-API hook), rather
-   than a dmc `color` prop. Loaded automatically here for the embedded
-   /model-viewer page; the standalone app in model_viewer/ keeps its own
-   identical copy at model_viewer/assets/model-viewer.css so it stays
-   deployable on its own, the same reason roamly/assets/ exists alongside
-   this repo-root assets/ folder. */
+   than a dmc `color` prop. Loaded for the /model-viewer docs page and for
+   the standalone app alike: examples/model_viewer_app.py serves this same
+   repo-root assets/ folder, so there is one copy of this file. */
 .model-viewer-page .mantine-Button-root,
 .model-viewer-page .mantine-ActionIcon-root {
     --button-bg: #0891b2 !important;
@@ -71,7 +69,7 @@
     width: 100% !important;
 }
 
-/* "Show dimensions" (model_viewer/showcase.py's dims-toggle) -- the 6
+/* "Show dimensions" (docs/model_viewer/showcase.py's dims-toggle) -- the 6
    corner ".dot" hotspots and 5 edge-length ".dim" labels are positioned
    in 3D by the clientside _update_dimensions callback; this only styles
    their appearance. .dim's own text comes from that callback too (e.g.
@@ -123,30 +121,3 @@
     stroke-dasharray: 4 3;
 }
 
-/* Phones and narrow tablets: the sidebar-beside-viewer row (built with
-   wrap="nowrap" in showcase.py, which is right on a desktop) would leave
-   the viewer only ~150px of a 390px screen, so stack instead -- controls
-   above, viewer below, both full width. !important because Mantine writes
-   the Stack's 220px width and the Paper's flex/height as inline styles,
-   which a plain rule can't reach. The viewer gets a fixed viewport-
-   relative height here since the embedded page passes it a
-   `calc(100vh - ...)` sized for a full-height column, which is far too
-   tall once it sits *under* the controls rather than beside them.
-   model-viewer's own touchAction default ("pan-y") is already the right
-   mobile behavior -- a vertical swipe scrolls the page, a horizontal drag
-   orbits the model -- so it needs nothing here. */
-@media (max-width: 768px) {
-    .model-viewer-page #model-viewer-layout {
-        flex-wrap: wrap !important;
-    }
-
-    .model-viewer-page #model-viewer-controls {
-        width: 100% !important;
-    }
-
-    .model-viewer-page #model-viewer-viewer-container {
-        flex-basis: 100% !important;
-        height: 55vh !important;
-        min-height: 300px;
-    }
-}

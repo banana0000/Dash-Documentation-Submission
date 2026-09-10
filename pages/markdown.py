@@ -35,6 +35,10 @@ class Meta(BaseModel):
     endpoint: str
     package: str = "dash_pydantic_form"
     category: Optional[str] = None
+    # Position within the category's sidebar section (components/navbar.py
+    # sorts by `order`, then name). Passed straight through to Dash's own
+    # register_page(order=...).
+    order: Optional[int] = None
     icon: Optional[str] = None
     # Who may read this page: public | auth | admin | hidden. Absent means
     # public — see lib/page_tiers.py for the tier model and why the default
@@ -148,6 +152,7 @@ for file in files:
         description=metadata.description,
         layout=layout,
         category=metadata.category,
+        order=metadata.order,
         icon=metadata.icon,
         # Without this Dash infers an image from assets/ and finds `logo.svg` —
         # an SVG, which every social scraper rejects — then emits it ALONGSIDE

@@ -204,7 +204,7 @@ app = Dash(
     external_scripts=scripts,
     update_title=None,
     prevent_initial_callbacks=True,
-    index_string=open('templates/index.html').read(),
+    index_string=open('templates/index.html', encoding='utf-8').read(),
     **MCP_KWARGS,
 )
 

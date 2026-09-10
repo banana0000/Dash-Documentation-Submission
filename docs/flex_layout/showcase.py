@@ -1,12 +1,14 @@
 """IDE-style docking layout built on dash-flexlayout (a Dash wrapper for
 flexlayout-react, from 2plot.ai).
 
-Shared between two entry points, the same shape as components/excalidraw_kpi.py:
+Shared between two entry points, the same shape as docs/excalidraw/kpi_mockup.py:
 
-| Where                | Notes                                                     |
-|----------------------|------------------------------------------------------------|
-| pages/flex-layout.py | Embedded page on the main site at /flex-layout             |
-| flexlayout_app.py    | Fully independent standalone app, own Dash(__name__) instance, own port |
+| Where                           | Notes                                                |
+|---------------------------------|------------------------------------------------------|
+| docs/flex_layout/flex_layout.md | The /flex-layout docs page, which embeds the          |
+|                                 | module-level ``component`` below through ``.. exec::``|
+| examples/flexlayout_app.py      | Fully independent standalone app, own Dash(__name__) |
+|                                 | instance, own port                                   |
 
 Element ids are prefixed ``flexlayout-`` so this page's callbacks never
 collide with ids on any other page of the same running multi-page app.
@@ -30,8 +32,8 @@ _ID_PREFIX = "flexlayout-"
 
 # Every dmc Button/ActionIcon/Switch and FlexLayout's own selected-tab accent
 # under a .flexlayout-page ancestor is cyan -- see assets/flexlayout.css.
-# Both entry points (pages/flex-layout.py and flexlayout_app.py) put this
-# class on their outermost container.
+# Both entry points (the `component` below and examples/flexlayout_app.py)
+# put this class on their outermost container.
 PAGE_CLASS = "flexlayout-page"
 
 _CYAN = "#0891b2"
@@ -340,3 +342,9 @@ def _toggle_debug_mode(checked):
 )
 def _toggle_popout(checked):
     return checked
+
+
+# What `.. exec::docs.flex_layout.showcase` renders on the /flex-layout docs
+# page. The PAGE_CLASS wrapper is what scopes assets/flexlayout.css's cyan
+# accent to this demo and nothing else on the page.
+component = dmc.Box(build_flexlayout_showcase(height="70vh"), className=PAGE_CLASS)

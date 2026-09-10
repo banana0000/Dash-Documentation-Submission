@@ -1,93 +1,41 @@
-from pathlib import Path
+"""Roamly -- the Stays section: a grid of listing cards and an orthographic
+globe pinning every stay.
 
+Embedded on the /roamly docs page through `.. exec::docs.roamly.stays`. The
+listing data is the standalone app's own module (examples/roamly/data.py),
+imported here so the docs page and `python examples/roamly/app.py` can never
+disagree about which stays exist.
+
+The docs page is one route, so the standalone app's /listing/<id> navigation
+becomes an in-page selection instead: clicking a card picks that stay in the
+Listing detail section further down the page (docs/roamly/listing.py) and
+scrolls to it. Ids are prefixed ``rm-`` so nothing here collides with the
+rest of the site.
+"""
 import dash_mantine_components as dmc
-from dash import callback, dcc, register_page, Input, Output
+from dash import ALL, Input, Output, callback, clientside_callback, ctx, dcc, html, no_update
 from dash_iconify import DashIconify
 import plotly.graph_objects as go
 
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-from roamly.data import list_listings
+from examples.roamly.data import list_listings
 
-NAME = "Roamly *"
-DESCRIPTION = (
-    "A house-only stay/property booking platform mockup -- a listings grid, an "
-    "individual stay page with an image gallery, and a host dashboard. Built on "
-    "Dash, Dash Mantine Components and dash-leaflet2."
-)
-
-register_page(
-    __name__,
-    "/roamly",
-    name=NAME,
-    title=PAGE_TITLE_PREFIX + NAME,
-    description=DESCRIPTION,
-    image_url=OG_IMAGE_URL,
-    icon="tabler:map-2",
-)
-
-# dash-improve-my-llms picks this up automatically and serves it verbatim at
-# /roamly/llms.txt -- see pages/excalidraw.py for the same pattern.
-LLMS_DOC = (
-    f"# {NAME}\n\n> {DESCRIPTION}\n\n"
-    "Embedded here at /roamly, /roamly/host and /roamly/listing/<id> -- the "
-    "same app also runs standalone (own AppShell, theme, port) from roamly/ "
-    "at this repo's root, started with `python roamly/app.py`."
-)
-
-
-_ACTIVE_GRADIENT = {"from": "blue", "to": "green", "deg": 45}
+ACTIVE_GRADIENT = {"from": "blue", "to": "green", "deg": 45}
 
 
 def roamly_logo():
-    return dmc.Anchor(
-        dmc.Group(
-            [
-                dmc.ThemeIcon(
-                    DashIconify(icon="tabler:map-2", width=16),
-                    size=26, radius="xl", variant="filled", color="green",
-                ),
-                dmc.Text(
-                    "Roamly", fw=700, size="md",
-                    variant="gradient", gradient=_ACTIVE_GRADIENT,
-                ),
-            ],
-            gap=6,
-        ),
-        href="/roamly", underline=False,
-    )
-
-
-def roamly_nav(active):
-    """Roamly's own logo + Stays/Host dashboard switcher, embedded inline
-    in the page instead of living in a second header -- this site's own
-    navbar already owns that role, so Roamly's separate AppShell/header
-    (used by the standalone app in roamly/app.py) isn't part of the embed.
-
-    Each of the three embedded pages is its own module, so unlike the
-    standalone app (one shared layout, a callback watching the URL) each
-    page here just hardcodes which tab is "active" -- there's no dynamic
-    routing within a single layout to react to.
-    """
-    def tab(label, href, key):
-        is_active = active == key
-        return dmc.Anchor(
-            dmc.Button(
-                label, size="xs", radius="xl",
-                variant="gradient" if is_active else "light",
-                gradient=_ACTIVE_GRADIENT if is_active else None,
-            ),
-            href=href,
-        )
-
+    """The Roamly wordmark, as the standalone app's header draws it."""
     return dmc.Group(
         [
-            roamly_logo(),
-            dmc.Group(
-                [tab("Stays", "/roamly", "stays"), tab("Host dashboard", "/roamly/host", "host")],
-                gap="xs",
+            dmc.ThemeIcon(
+                DashIconify(icon="tabler:map-2", width=16),
+                size=26, radius="xl", variant="filled", color="green",
+            ),
+            dmc.Text(
+                "Roamly", fw=700, size="md",
+                variant="gradient", gradient=ACTIVE_GRADIENT,
             ),
         ],
-        justify="space-between", mb="md",
+        gap=6,
     )
 
 
@@ -125,22 +73,24 @@ def _build_globe_figure(listings, dark=False):
 def overview_map(listings):
     """All listings on one 3D-look globe -- Plotly's own Scattergeo with an
     orthographic projection, rather than dash_leaflet2's flat 2D Map (used
-    on the per-listing page, pages/roamly-listing.py). Draggable to rotate,
-    scroll to zoom, same as any other dcc.Graph. Its land/ocean colors
-    follow this site's own dark mode via the callback below, since the
-    figure is otherwise static (this page's `layout` is a plain module-
-    level value, built once at import time, not a function).
+    in the Listing detail section, docs/roamly/listing.py). Draggable to
+    rotate, scroll to zoom, same as any other dcc.Graph. Its land/ocean
+    colors follow this site's dark mode via the callback below, since the
+    figure is otherwise static (built once at import time).
     """
     return dcc.Graph(
-        id="roamly-globe",
+        id="rm-globe",
         figure=_build_globe_figure(listings),
         config={"displayModeBar": False},
-        style={"height": "380px", "marginTop": "40px", "marginBottom": "var(--mantine-spacing-lg)"},
+        style={"height": "380px", "marginTop": "24px"},
     )
 
 
 @callback(
-    Output("roamly-globe", "figure"),
+    Output("rm-globe", "figure"),
+    # This site's own MantineProvider id (components/appshell.py), not the
+    # standalone app's "mantine-provider" -- the embed follows the docs
+    # site's dark-mode toggle.
     Input("m2d-mantine-provider", "forceColorScheme"),
 )
 def _globe_for_scheme(scheme):
@@ -148,7 +98,9 @@ def _globe_for_scheme(scheme):
 
 
 def listing_card(listing):
-    return dmc.Anchor(
+    """A stay card. The wrapping Div carries a pattern-matching id so one
+    callback below can tell which card was clicked."""
+    return html.Div(
         dmc.Card(
             [
                 dmc.CardSection(
@@ -199,32 +151,71 @@ def listing_card(listing):
                 ),
             ],
             withBorder=True,
+            style={"height": "100%"},
         ),
-        href=f"/roamly/listing/{listing['id']}",
-        underline=False,
+        id={"type": "rm-stay-card", "index": listing["id"]},
+        n_clicks=0,
+        style={"cursor": "pointer"},
     )
 
 
-layout = dmc.Container(
-    id="m2d-page-roamly",
-    children=[
-        roamly_nav("stays"),
+component = dmc.Stack(
+    [
+        roamly_logo(),
         dmc.Stack(
             [
-                dmc.Title("Find your next stay", order=1),
+                dmc.Title("Find your next stay", order=3, style={"margin": 0}),
                 dmc.Text(
                     "Browse full houses with real photos, ratings, and maps — no surprises at check-in.",
-                    c="dimmed", size="lg",
+                    c="dimmed",
                 ),
             ],
-            gap=4, mb="lg",
+            gap=4,
         ),
         dmc.SimpleGrid(
             [listing_card(listing) for listing in list_listings()],
-            cols={"base": 1, "sm": 2, "lg": 3},
+            cols={"base": 1, "sm": 2, "lg": 2},
             spacing="lg",
         ),
         overview_map(list_listings()),
+        # Sink for the scroll-to-detail clientside callback below.
+        dcc.Store(id="rm-stay-scroll-sink"),
     ],
-    size="lg", py="md",
+    gap="md",
+)
+
+
+@callback(
+    Output("rm-listing-picker", "value"),
+    Input({"type": "rm-stay-card", "index": ALL}, "n_clicks"),
+    prevent_initial_call=True,
+)
+def _select_stay_from_card(clicks):
+    """A card click selects that stay in the Listing detail section's picker
+    (docs/roamly/listing.py); the picker's own callback renders the detail."""
+    if not any(clicks):
+        return no_update
+    return ctx.triggered_id["index"]
+
+
+# Scroll the Listing detail section into view on a card click. The detail
+# element always exists (it renders the first stay at import time), so the
+# scroll can fire immediately while the server callback above swaps its
+# content.
+clientside_callback(
+    """
+    function(clicks) {
+        if (!clicks || !clicks.some(Boolean)) {
+            return window.dash_clientside.no_update;
+        }
+        const target = document.getElementById('rm-listing-detail');
+        if (target) {
+            target.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("rm-stay-scroll-sink", "data"),
+    Input({"type": "rm-stay-card", "index": ALL}, "n_clicks"),
+    prevent_initial_call=True,
 )

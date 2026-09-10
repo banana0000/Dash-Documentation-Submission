@@ -216,14 +216,14 @@ def test_the_manifest_describes_THIS_site(client):
     An installed app takes its home-screen label from `short_name`, so this is
     the one place a wrong string becomes a permanent icon on someone's phone.
     """
-    manifest = json.loads(MANIFEST.read_text())
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     assert manifest["name"] == SITE_BRAND
     assert "Dash Email" not in manifest["short_name"]
     assert "Dash Email" not in manifest["description"]
 
 
 def test_the_manifest_is_installable():
-    manifest = json.loads(MANIFEST.read_text())
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     assert manifest["name"].strip(), "empty name — no browser will offer install"
     assert manifest["short_name"].strip(), "empty short_name"
     assert manifest["start_url"] == "/"
@@ -231,7 +231,7 @@ def test_the_manifest_is_installable():
 
 
 def test_every_manifest_icon_resolves(client):
-    manifest = json.loads(MANIFEST.read_text())
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     icons = manifest.get("icons") or []
     assert icons, "the manifest declares no icons"
     for icon in icons:
@@ -250,7 +250,7 @@ def test_the_apple_touch_icon_is_declared_and_resolves(client):
 
 def test_the_theme_colour_agrees_with_the_manifest(client):
     """A mismatch is one colour in the browser chrome, another on the splash."""
-    manifest = json.loads(MANIFEST.read_text())
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     declared = _meta(client.get("/").text, "theme-color")
     assert declared, "no theme-color"
     assert declared[0].lower() == manifest["theme_color"].lower()
@@ -289,7 +289,7 @@ def test_the_index_template_is_still_wired_in(app_module):
     the prerender path, which social scrapers do not take. Deleting the
     template kills every unfurl, the icons and the manifest at once.
     """
-    index = (REPO_ROOT / "templates" / "index.html").read_text()
+    index = (REPO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")
     for placeholder in ("{%metas%}", "{%favicon%}", "{%css%}", "{%app_entry%}",
                         "{%config%}", "{%scripts%}", "{%renderer%}"):
         assert placeholder in index, f"{placeholder} missing from the template"

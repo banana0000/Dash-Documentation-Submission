@@ -11,7 +11,7 @@ import pytest
 from conftest import REPO_ROOT
 from lib import constants
 
-INDEX_HTML = (REPO_ROOT / "templates" / "index.html").read_text()
+INDEX_HTML = (REPO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")
 
 # The template is heavily commented, and several comments quote the very tags
 # they are explaining. Scanning for live markup has to ignore them.

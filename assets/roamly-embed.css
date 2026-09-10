@@ -1,12 +1,12 @@
-/* Styling for the embedded Roamly pages (pages/roamly.py, roamly-host.py,
-   roamly-listing.py) that dmc props alone can't reach -- dash_mui_charts
+/* Styling for the Roamly sections of the /roamly docs page (docs/roamly/
+   stays.py, listing.py, host.py) that dmc props alone can't reach -- dash_mui_charts
    (MUI X-Charts underneath) has its own theme, separate from Mantine's, so
    its axis/legend text stays MUI's default near-black even when this
    site's own dark mode is on, going near-invisible on a dark background.
    Scoped to dark mode via the attribute Mantine sets on <html>, so light
-   mode is untouched. Same rules as roamly/assets/controls.css (the
-   standalone app's own copy) -- that file isn't loaded here, since Dash
-   only auto-serves the running app's own assets/ folder. */
+   mode is untouched. Same rules as examples/roamly/assets/controls.css
+   (the standalone app's own copy) -- that file isn't loaded here, since
+   Dash only auto-serves the running app's own assets/ folder. */
 html[data-mantine-color-scheme="dark"] .MuiChartsAxis-tickLabel,
 html[data-mantine-color-scheme="dark"] .MuiChartsAxis-label {
     fill: #ced4da !important;

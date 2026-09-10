@@ -1,12 +1,14 @@
 ---
-name: Color Picker *
-description: A color picker with four switchable shapes -- a continuous HSV wheel, clickable petals, a ring of swatches, and a photo you sample like an eyedropper
-endpoint: /examples/color-picker
+name: Color Picker
+description: A Dash color picker with four switchable shapes — a continuous HSV wheel, clickable petals, a ring of swatches, and a photo you sample pixel by pixel like an eyedropper.
+endpoint: /color-picker
 package: color-picker
 icon: mdi:palette-outline
+category: Showcases
+order: 1
 ---
 
-.. llms_copy::Color Picker *
+.. llms_copy::Color Picker
 
 .. toc::
 
@@ -26,11 +28,11 @@ them to preview a color, click to lock it in, like an eyedropper.
 
 Switch shapes with the control at the top; hover to preview, click to lock a color:
 
-.. exec::docs.color-picker.picker
+.. exec::docs.color_picker.picker
     :code: false
 Source code:
 
-.. source::docs/color-picker/picker.py
+.. source::docs/color_picker/picker.py
 
 ---
 
@@ -147,18 +149,19 @@ a picker's state.
 
 ### The Standalone App
 
-`color_picker_app.py` is a fully independent, single-file Dash app — its own
-`Dash(__name__)` instance, its own `/llms.txt` Flask route, no imports from
-this repo's `pages/` or `components/`. Run it on its own with:
+`examples/color_picker_app.py` is a fully independent, single-file Dash app —
+its own `Dash(__name__)` instance, its own `/llms.txt` Flask route, no imports
+from this repo's `pages/`, `components/` or `docs/`. Run it from the repo root
+with:
 
 ```bash
-python color_picker_app.py
+python examples/color_picker_app.py
 ```
 
 It serves on port 8560, separate from the main site's 8559.
 
 Source code:
 
-.. source::color_picker_app.py
+.. source::examples/color_picker_app.py
     :defaultExpanded: false
     :withExpandedButton: true

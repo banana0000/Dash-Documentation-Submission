@@ -1,4 +1,4 @@
-/* components/dash_flow_playground.py: the DashFlows `style` prop
+/* docs/dash_flow/playground.py: the DashFlows `style` prop
    ({"width": "100%", "height": "100%"}) never reaches the component's own
    root div (dash_flows 1.3.0 doesn't forward `style` to the wrapper it
    renders) -- confirmed by inspecting the live DOM, where that div carries
@@ -17,7 +17,7 @@
 /* Canvas backdrop stays the original near-black (colorMode="dark"'s own
    rgb(26, 27, 30)) -- contrast comes from the dot-grid pattern colour
    instead (see backgroundColor= on the DashFlows component in
-   components/dash_flow_playground.py, which does reach the pattern via the
+   docs/dash_flow/playground.py, which does reach the pattern via the
    --xy-background-pattern-color-props CSS variable, just not the backdrop
    itself). A CSS override forcing the backdrop lighter was tried and
    reverted -- kept as a note here since the next person will find the same

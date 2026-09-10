@@ -1,34 +1,34 @@
+"""The sidebar — one registry, the app's identity from frontmatter.
+
+Ported from the boilerplate's 1.6.38 navbar (the network's navigation
+contract) to replace the hand-written `page_order` / `apps_paths` lists this
+fork carried: those listed the showcases under an "Apps" section that opened
+every one of them in a NEW TAB (`target="_blank"`), which is what made the
+showcases feel like external tools bolted on rather than pages of this site.
+Every showcase is a docs page now (docs/<slug>/<slug>.md) and navigates in
+place like any other page.
+
+Nothing in this file is edited by a fork. The sections come from each page's
+frontmatter (`category:` + `order:`) in the order of
+`lib.constants.CATEGORY_ORDER`; Resources from `lib.constants.resources()`.
+The boilerplate's owner-only Admin section is omitted: this fork registers
+no /admin pages, so there is nothing for it to list.
+
+Contract order: Home · Changelog (when registered) → the app's sections →
+API (when generated) → Resources.
+"""
+from __future__ import annotations
+
+from collections import defaultdict
+
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
-from lib.constants import HEADER_HEIGHT
+from lib.constants import CATEGORY_ORDER, HEADER_HEIGHT, resources
 
-excluded_links = [
-    "/404",
-    "/styles-api",
-    "/style-props",
-    "/dash-iconify",
-    "/migration",
-    "/learning-resources",
-    # Roamly's own sub-pages -- reached from /roamly's internal Stays/Host
-    # dashboard switcher, not this site's own nav (which only lists /roamly
-    # itself, under Apps).
-    "/roamly/host",
-    # path_template pages register their "path" with placeholders resolved
-    # to "none" (dash's own doing, not a bug here) -- this is the literal
-    # value dash.page_registry stores for /roamly/listing/<listing_id>.
-    "/roamly/listing/none",
-]
-
-# Pages that are tools/demos rather than documentation — listed under their
-# own "Apps" section instead of getting lumped in with "Documentation".
-apps_paths = [
-    "/excalidraw",
-    "/dash-flow",
-    "/roamly",
-    "/model-viewer",
-    "/flex-layout",
-]
+ADMIN_PREFIX = "/admin/"
+UNCATEGORISED = "Documentation"
+DEFAULT_ICON = "fluent:document-24-regular"
 
 
 def create_nav_link(icon, text, href, external=False):
@@ -66,133 +66,133 @@ def create_nav_section(title, links):
     )
 
 
-def create_content(data):
-    """Create navbar content with organized sections"""
+# ----------------------------------------------------------------- pages --
 
-    # Define the desired order for documentation pages
-    page_order = [
-        "Getting Started",
-        "Pluggable Backends",
-        "Backend Deep Dive",
-        "FastAPI Showcase",
-        "Custom Directives",
-        "AI/LLM Integration",
-        "Multi-Site Networks",
-        "Network Standard",
-        "Authentication",
-        "Interactive .md",
-        "Data Visualization",
-    ]
 
-    # Create a mapping of page names to their links, splitting out apps_paths
-    # into their own bucket before docs pages get ordered below. Apps open in
-    # a new tab (external=True) -- they're full-screen tools meant to stand
-    # on their own page, not a docs page you navigate back and forth from.
-    page_dict = {}
-    apps_links = []
+def is_admin_path(path: str) -> bool:
+    return (path or "").startswith(ADMIN_PREFIX)
+
+
+def is_nav_page(entry) -> bool:
+    """A page the sidebar and search may list: not Home, not /admin/*, not
+    the 404, not a hidden-tier page, and registered from a real path."""
+    path = entry.get("path") or ""
+    if not path.startswith("/") or path == "/" or is_admin_path(path):
+        return False
+    if entry.get("name") in ("Not found 404",) or path in ("/404", "/changelog", "/api"):
+        return False
+    return page_tier(path) != "hidden"
+
+
+def _sort_key(entry):
+    order = entry.get("order")
+    try:
+        order = int(order) if order is not None else 1000
+    except (TypeError, ValueError):
+        order = 1000
+    return (order, entry.get("name") or "")
+
+
+def sections_for(data) -> list[tuple[str, list]]:
+    """``[(section title, [registry entries]), ...]`` in contract order:
+    CATEGORY_ORDER first, then any other category alphabetically; pages
+    within a section by `order` then name. Uncategorised pages fall into
+    one "Documentation" section, last of the app's own."""
+    by_cat: dict[str, list] = defaultdict(list)
     for entry in data:
-        if entry["path"] not in excluded_links and entry["path"] != "/":
-            is_app = entry["path"] in apps_paths
-            link = create_nav_link(
-                entry.get("icon", "fluent:document-24-regular"),
-                entry["name"],
-                entry["path"],
-                external=is_app,
-            )
-            if is_app:
-                apps_links.append(link)
-            else:
-                page_dict[entry["name"]] = link
+        if not is_nav_page(entry):
+            continue
+        by_cat[entry.get("category") or UNCATEGORISED].append(entry)
+    known = [c for c in CATEGORY_ORDER if c in by_cat]
+    extra = sorted(c for c in by_cat if c not in CATEGORY_ORDER and c != UNCATEGORISED)
+    tail = [UNCATEGORISED] if UNCATEGORISED in by_cat else []
+    return [(c, sorted(by_cat[c], key=_sort_key)) for c in known + extra + tail]
 
-    # Order the links according to page_order
-    page_links = []
-    for page_name in page_order:
-        if page_name in page_dict:
-            page_links.append(page_dict[page_name])
 
-    # Add any remaining pages that aren't in the specified order
-    for name, link in page_dict.items():
-        if name not in page_order:
-            page_links.append(link)
+def page_tier(path: str) -> str:
+    """This page's locally-declared tier, or "public" when tiers are not
+    wired on this fork."""
+    try:
+        from lib import page_tiers
+
+        return page_tiers.local_tier(path)
+    except Exception:  # pragma: no cover — tiers optional on a fork
+        return "public"
+
+
+_LOCK_LABELS = {"auth": "Sign in required", "admin": "Admin access required"}
+
+
+def _page_link(entry):
+    """A sidebar link, with a lock when the page needs an account: listing a
+    locked page indistinguishably sends a reader to a sign-in card with no
+    warning. The gate is unchanged — this is signage. dmc.Tooltip, NOT
+    `title=`: DMC 2.8's Anchor accepts aria-* wildcards but REJECTS `title`
+    with a TypeError at app construction."""
+    link = create_nav_link(entry.get("icon") or DEFAULT_ICON,
+                           entry.get("nav") or entry["name"], entry["path"])
+    label = _LOCK_LABELS.get(page_tier(entry["path"]))
+    if not label:
+        return link
+    group = link.children
+    group.children = list(group.children) + [
+        DashIconify(icon="fluent:lock-closed-16-regular", width=13,
+                    style={"opacity": 0.55, "marginLeft": "auto"}),
+    ]
+    return dmc.Tooltip(link, label=label, position="right", withArrow=True, openDelay=300)
+
+
+def _has_api_page(data) -> bool:
+    return any((e.get("path") or "") == "/api" for e in data)
+
+
+def _has_changelog(data) -> bool:
+    return any((e.get("path") or "") == "/changelog" for e in data)
+
+
+# ----------------------------------------------------------------- tree --
+
+
+def create_content(data):
+    """The sidebar tree, shared by the desktop navbar and the mobile drawer."""
+    data = list(data)
+    blocks = [create_nav_link("fluent:home-24-regular", "Home", "/")]
+    if _has_changelog(data):
+        blocks.append(create_nav_link("tabler:history", "Changelog", "/changelog"))
+
+    for title, entries in sections_for(data):
+        blocks.append(dmc.Divider(mt="xs", mb="xs"))
+        blocks.append(create_nav_section(title, [_page_link(e) for e in entries]))
+
+    if _has_api_page(data):
+        blocks.append(dmc.Divider(mt="md", mb="sm"))
+        blocks.append(create_nav_section(
+            "API", [create_nav_link("mdi:api", "Component props", "/api")]))
+
+    blocks.append(dmc.Divider(mt="md", mb="sm"))
+    blocks.append(create_nav_section(
+        "Resources",
+        [create_nav_link(r["icon"], r["label"], r["url"], external=True)
+         for r in resources()],
+    ))
 
     return dmc.ScrollArea(
         offsetScrollbars=True,
         type="scroll",
         style={"height": "100%"},
-        children=dmc.Stack(
-            [
-                # Home link
-                create_nav_link(
-                    "fluent:home-24-regular",
-                    "Home",
-                    "/"
-                ),
-
-                # Documentation Pages Section
-                dmc.Divider(mt="xs", mb="xs"),
-                create_nav_section(
-                    "Documentation",
-                    page_links
-                ),
-
-                # Apps Section — tools/demos (e.g. the Excalidraw mockup)
-                # that aren't documentation, kept separate from the list above.
-                dmc.Divider(mt="md", mb="sm"),
-                create_nav_section(
-                    "Apps",
-                    apps_links
-                ),
-
-                # Pip Components Section — sits between the docs and the
-                # general Resources list because it is not a third-party
-                # reference: it is this network's own package index, and the
-                # catalogue a reader of these docs is most likely to want next.
-                dmc.Divider(mt="md", mb="sm"),
-                create_nav_section(
-                    "Pip Components",
-                    [
-                        create_nav_link(
-                            "solar:box-bold-duotone",
-                            "Browse components",
-                            "https://2plot.dev/pip",
-                            external=True
-                        ),
-                    ]
-                ),
-
-                # External Resources Section
-                dmc.Divider(mt="md", mb="sm"),
-                create_nav_section(
-                    "Resources",
-                    [
-                        create_nav_link(
-                            "fluent-mdl2:forum",
-                            "Dash Community",
-                            "https://community.plotly.com/",
-                            external=True
-                        ),
-                        create_nav_link(
-                            "ic:baseline-design-services",
-                            "DMC",
-                            "https://www.dash-mantine-components.com/",
-                            external=True
-                        ),
-                        # 2plot.dev, NOT pip-install-python.com — the package
-                        # index is the network host, and that domain is not a
-                        # link this app publishes.
-                        create_nav_link(
-                            "mdi:package-variant-closed",
-                            "2plot.dev",
-                            "https://2plot.dev",
-                            external=True
-                        ),
-                    ]
-                ),
-            ],
-            gap="xs",
-            p="md",
-        ),
+        children=dmc.Stack(blocks, gap="xs", p="md"),
     )
+
+
+# --------------------------------------------------------------- search --
+
+
+def search_data(data) -> list:
+    """Search entries: the pages the sidebar lists, and nothing else —
+    never /admin/*, never a hidden-tier page (an anonymous visitor could
+    otherwise enumerate them from the dropdown)."""
+    return [{"label": e.get("nav") or e["name"], "value": e["path"]}
+            for e in sorted((e for e in data if is_nav_page(e)), key=_sort_key)]
 
 
 def create_mobile_content(data):
@@ -212,12 +212,9 @@ def create_mobile_content(data):
                     size="md",
                     nothingFoundMessage="No pages found",
                     leftSection=DashIconify(icon="mingcute:search-3-line", width=18),
-                    data=[
-                        {"label": component["name"], "value": component["path"]}
-                        for component in data
-                        if component["name"] not in ["Home", "Not found 404"]
-                    ],
+                    data=search_data(data),
                     comboboxProps={"zIndex": 2000},
+                    **{"aria-label": "Search pages"},
                 ),
                 p="md",
                 pb="xs",
@@ -252,6 +249,10 @@ def create_navbar_drawer(data):
         overlayProps={"opacity": 0.55, "blur": 3},
         zIndex=1500,
         withCloseButton=False,  # removes the whole Drawer header row
+        # Always in the DOM: the mobile nav must not depend on a mount-on-open
+        # transition (the boilerplate measured `opened` flipping true while the
+        # content never mounted in an unfocused window).
+        keepMounted=True,
         size="300px",
         padding=0,
         children=create_mobile_content(data),

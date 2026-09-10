@@ -22,15 +22,19 @@ import os
 #
 # Naming rules, from the network standard:
 #   - the AUTHOR belongs in the description, not in the brand;
-#   - the brand names the component this submission actually is, not the
-#     boilerplate template it was forked from.
-SITE_BRAND = "Color Picker"
+#   - the brand names what this site IS. It started life as "Color Picker"
+#     (the first showcase) and stayed that way while five more showcases
+#     were added, so every surface advertised one-sixth of the site. It is
+#     a catalogue now, and the brand says so.
+SITE_BRAND = "Dash Showcases — live playgrounds for 2plot.ai components"
 
 SITE_DESCRIPTION = (
-    "A Dash color picker with four switchable shapes — a continuous HSV "
-    "wheel, clickable petals, a ring of swatches, and a photo you sample "
-    "like an eyedropper. By banana0000, built on the Dash Documentation "
-    "Boilerplate template."
+    "Six working Dash showcases on one documentation site — a four-shape "
+    "color picker, a dash-flows diagram playground, an Excalidraw KPI "
+    "mockup, a dash-flexlayout docking layout, a 3D model viewer and "
+    "Roamly, a stay-booking mockup — each with a live demo, a source "
+    "walkthrough and a standalone app. By banana0000, built on the Dash "
+    "Documentation Boilerplate template."
 )
 
 # Resolves {%title%} in templates/index.html, which is what the served HTML
@@ -41,9 +45,17 @@ APP_TITLE = SITE_BRAND
 
 # The brand without its tagline. SITE_BRAND is right for a page that has room
 # for it; this is for the places that prefix something else and would otherwise
-# run past every platform's truncation point. Identical to SITE_BRAND here
-# because the brand carries no tagline of its own.
-SITE_SHORT_NAME = "Color Picker"
+# run past every platform's truncation point.
+SITE_SHORT_NAME = "Dash Showcases"
+
+# The two-or-three-word mark in the header, next to the logo (the boilerplate
+# keeps this here rather than as a literal in components/header.py, so the
+# identity block in this file is the whole job when the site is renamed).
+WORDMARK = "Dash Showcases"
+LOGO_ASSET = "ddb.png"
+LOGO_STYLE = {"height": "36px", "width": "36px"}
+WORDMARK_COLOR = "#03c7e5"
+WORDMARK_VISIBLE_FROM = "xs"
 
 # Prefixed to every per-page title (`pages/markdown.py`, `pages/home.py`), and
 # therefore NOT only a browser-tab string: Dash passes the page title straight
@@ -211,6 +223,52 @@ def require_owned_base_url(base_url: str = BASE_URL) -> None:
                 "instead of the custom domain, splitting link equity across two "
                 "hosts. Set APP_BASE_URL to the public domain."
             )
+
+
+# ---------------------------------------------------------------------------
+# Navigation contract (from the boilerplate's 1.6.38 navbar) — the parts of
+# the sidebar that are IDENTICAL on every host come from template code and
+# these constants; the app's own sections come from each docs page's
+# frontmatter (`category:` + `order:`). Edit THIS block and the docs'
+# frontmatter, never components/navbar.py.
+# ---------------------------------------------------------------------------
+
+# The app's own sections, in sidebar order. Every docs page declares
+# `category:` in its frontmatter; categories not listed here follow the
+# listed ones, alphabetically. This site has one: the six showcases.
+CATEGORY_ORDER = [
+    "Showcases",
+]
+
+# ONE constant for the repository. The header's GitHub icon, the README and
+# the home page all point at it, so a fork sets it once.
+GITHUB_URL = "https://github.com/pip-install-python/banana0000-Submission"
+
+# Network-wide community links — identical on every host.
+DMC_URL = "https://www.dash-mantine-components.com/"
+PIP_COMPONENTS_URL = "https://2plot.dev/pip"
+
+# The upstream project a component wraps — `{"name": ..., "url": ...}` or
+# None. This site documents six showcases rather than one package, so the
+# packages are linked from each showcase page instead of the sidebar.
+UPSTREAM = None
+
+
+def resources() -> list:
+    """The sidebar's Resources section: third-party references only —
+    `dmc`, the 2plot.dev package index (the catalogue a reader of these
+    showcases is most likely to want next), and the upstream project when a
+    fork declares one. The owner's own links (repo, Discord, YouTube) live
+    in the top bar and the footer, never here."""
+    items = [
+        {"label": "dmc", "url": DMC_URL, "icon": "ic:baseline-design-services"},
+        {"label": "Pip Components", "url": PIP_COMPONENTS_URL,
+         "icon": "solar:box-bold-duotone"},
+    ]
+    if UPSTREAM:
+        items.append({"label": UPSTREAM["name"], "url": UPSTREAM["url"],
+                      "icon": UPSTREAM.get("icon", "mdi:open-in-new")})
+    return items
 
 
 # Height of the fixed AppShell header, in px. Consumed by AppShell(header=...)

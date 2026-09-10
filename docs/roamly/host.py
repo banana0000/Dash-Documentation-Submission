@@ -1,74 +1,20 @@
+"""Roamly -- the Host dashboard section: summary cards, a dash_mui_charts
+bar chart of views over twelve months, and a sparkline per listing.
+
+Embedded on the /roamly docs page through `.. exec::docs.roamly.host`; the
+standalone app serves the same dashboard at /host
+(examples/roamly/pages/host.py). dash_mui_charts (MUI X Charts underneath)
+has its own theme, separate from Mantine's, so assets/roamly-embed.css
+recolors its axis and legend text when this site is in dark mode.
+"""
 import dash_mantine_components as dmc
-from dash import register_page
 from dash_iconify import DashIconify
 import dash_mui_charts as dmuic
 
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-from roamly.data import list_listings
-
-NAME = "Roamly: Host dashboard *"
-DESCRIPTION = "Roamly's host performance dashboard, embedded on the main site -- see pages/roamly.py."
-
-register_page(
-    __name__,
-    "/roamly/host",
-    name=NAME,
-    title=PAGE_TITLE_PREFIX + NAME,
-    description=DESCRIPTION,
-    image_url=OG_IMAGE_URL,
-    icon="tabler:map-2",
-)
-
-LLMS_DOC = f"# {NAME}\n\n> {DESCRIPTION}\n"
+from examples.roamly.data import list_listings
 
 MONTHS = ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"]
 COLORS = ["#2f9e44", "#12b886", "#f59f00", "#e64980"]
-
-
-_ACTIVE_GRADIENT = {"from": "blue", "to": "green", "deg": 45}
-
-
-def roamly_logo():
-    return dmc.Anchor(
-        dmc.Group(
-            [
-                dmc.ThemeIcon(
-                    DashIconify(icon="tabler:map-2", width=16),
-                    size=26, radius="xl", variant="filled", color="green",
-                ),
-                dmc.Text(
-                    "Roamly", fw=700, size="md",
-                    variant="gradient", gradient=_ACTIVE_GRADIENT,
-                ),
-            ],
-            gap=6,
-        ),
-        href="/roamly", underline=False,
-    )
-
-
-def roamly_nav(active):
-    def tab(label, href, key):
-        is_active = active == key
-        return dmc.Anchor(
-            dmc.Button(
-                label, size="xs", radius="xl",
-                variant="gradient" if is_active else "light",
-                gradient=_ACTIVE_GRADIENT if is_active else None,
-            ),
-            href=href,
-        )
-
-    return dmc.Group(
-        [
-            roamly_logo(),
-            dmc.Group(
-                [tab("Stays", "/roamly", "stays"), tab("Host dashboard", "/roamly/host", "host")],
-                gap="xs",
-            ),
-        ],
-        justify="space-between", mb="md",
-    )
 
 
 def summary_card(icon, label, value, color="green"):
@@ -128,7 +74,7 @@ def listing_row(listing, color):
     )
 
 
-def _build_layout():
+def build_dashboard():
     listings = list_listings()
     total_reviews = sum(l["reviews"] for l in listings)
     avg_rating = round(sum(l["rating"] for l in listings) / len(listings), 2)
@@ -150,15 +96,14 @@ def _build_layout():
     )
     peak_value = max(series["data"][peak_month_index] for series in trend_series)
 
-    return dmc.Container(
+    return dmc.Stack(
         [
-            roamly_nav("host"),
             dmc.Stack(
                 [
-                    dmc.Title("Host dashboard", order=2),
+                    dmc.Title("Host dashboard", order=3, style={"margin": 0}),
                     dmc.Text("Performance across all your listings.", c="dimmed"),
                 ],
-                gap=4, mb="lg",
+                gap=4,
             ),
             dmc.SimpleGrid(
                 [
@@ -168,7 +113,7 @@ def _build_layout():
                     summary_card("tabler:message-circle", "Total reviews", str(total_reviews), color="grape"),
                 ],
                 cols={"base": 1, "sm": 2, "lg": 4},
-                spacing="md", mb="lg",
+                spacing="md",
             ),
             dmc.Card(
                 [
@@ -189,17 +134,17 @@ def _build_layout():
                         ],
                     ),
                 ],
-                withBorder=True, mb="lg",
+                withBorder=True,
             ),
-            dmc.Text("Your listings", fw=600, mb="sm"),
+            dmc.Text("Your listings", fw=600),
             dmc.SimpleGrid(
                 [listing_row(listing, COLORS[i % len(COLORS)]) for i, listing in enumerate(listings)],
-                cols={"base": 1, "md": 3},
+                cols={"base": 1, "md": 2},
                 spacing="sm",
             ),
         ],
-        size="lg", py="md",
+        gap="md",
     )
 
 
-layout = _build_layout()
+component = build_dashboard()

@@ -1,13 +1,16 @@
 /**
- * Claude-style Typewriter Animation for "Dash Docs"
+ * Claude-style Typewriter Animation for the header wordmark
  * Creates a streaming text effect similar to Claude's response animation
  */
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Text animation handler loaded');
 
-    // Configuration
-    const TEXT_TO_TYPE = "Dash Docs";
+    // Configuration. The text comes from the wordmark the header rendered
+    // (lib/constants.WORDMARK) rather than a literal here, so renaming the
+    // site never leaves this file typing the old name over the new one.
+    const initial = document.getElementById('dash-docs-title');
+    const TEXT_TO_TYPE = (initial && initial.textContent.trim()) || "Dash Showcases";
     const TYPING_SPEED = 80; // milliseconds per character
     const INITIAL_DELAY = 500; // delay before starting animation
 
