@@ -145,5 +145,5 @@ dash-flexlayout>=0.0.1
 # CI asserts the installed version inside the built image — a transitive pin
 # (markdown2dash asks for gunicorn<22) must never be allowed to drag the
 # production server back under the floor without failing the build.
-gunicorn>=23.0.0
+gunicorn>=26.2.0
 # uvicorn[standard]>=0.27.0
