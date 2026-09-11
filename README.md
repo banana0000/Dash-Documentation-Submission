@@ -29,6 +29,7 @@ component on its own port.
 | **FlexLayout Playground** — an IDE-style docking layout holding a small sales dashboard; drag tabs, split panels, resize with the splitters | [`/flex-layout`](docs/flex_layout/flex_layout.md) | [dash-flexlayout](https://flexlayout.2plot.dev) (flexlayout-react) | `examples/flexlayout_app.py` | 8080 |
 | **3D Model Viewer** — eight glTF sample models; orbit, zoom, tone mapping, shadows, AR, and a live texture upload | [`/model-viewer`](docs/model_viewer/model_viewer.md) | [dash-model-viewer](https://modelviewer.2plot.dev) (Google model-viewer) | `examples/model_viewer_app.py` | 8081 |
 | **Roamly** — a house-only stay booking mockup: listings grid with a globe, a stay page with a gallery and a map, and a host dashboard | [`/roamly`](docs/roamly/roamly.md) | [dash-leaflet2](https://leaflet.2plot.dev), [dash-mui-charts](https://muicharts.2plot.dev), dash-image-gallery | `examples/roamly/app.py` | 8870 |
+| **MUI Charts Dashboard** — one dataset of 1,400 orders and five views of it: dmc controls filter the rows, every MUI X chart is re-derived from what survives | [`/mui-dashboard`](docs/mui_dashboard/mui_dashboard.md) | [dash-mui-charts](https://muicharts.2plot.dev) (MUI X Charts) | `examples/mui_dashboard_app.py` | 8100 |
 
 ---
 

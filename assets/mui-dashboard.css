@@ -1,0 +1,105 @@
+/* MUI Charts Dashboard (docs/mui_dashboard/dashboard.py) -- every dmc control
+   on this page is grey rather than the site's teal, so the charts carry all of
+   the colour. Scoped to .mui-dashboard-page, which both entry points put on
+   their outermost container, so it cannot leak into the rest of the site.
+   Overrides the CSS custom properties Mantine's variants read from rather than
+   a dmc `color` prop, so one rule covers every control at once.
+
+   The charts themselves are NOT coloured here: MUI X takes its palette as the
+   `colors` prop, which the Palette picker writes from Python. */
+.mui-dashboard-page .mantine-Button-root,
+.mui-dashboard-page .mantine-ActionIcon-root {
+    --button-bg: #495057 !important;
+    --button-hover: #343a40 !important;
+    --button-bd: 1px solid #495057 !important;
+    --button-color: #f8f9fa !important;
+
+    --ai-bg: #495057 !important;
+    --ai-hover: #343a40 !important;
+    --ai-color: #f8f9fa !important;
+}
+
+/* Reset filters is variant="outline": its border and text read these, and
+   without them it would keep the site's teal outline. */
+.mui-dashboard-page .mantine-Button-root[data-variant="outline"] {
+    --button-bg: transparent !important;
+    --button-hover: #f1f3f5 !important;
+    --button-bd: 1px solid #868e96 !important;
+    --button-color: #343a40 !important;
+}
+
+.mui-dashboard-page .mantine-Switch-root {
+    /* Not --switch-bg -- Mantine's own [data-checked] rule recomputes that
+       one from --switch-color every time, which would stomp this. */
+    --switch-color: #495057 !important;
+}
+
+/* The month RangeSlider: both handles, the band between them, and the marks
+   that fall inside it. */
+.mui-dashboard-page .mantine-RangeSlider-root,
+.mui-dashboard-page .mantine-Slider-root {
+    --slider-color: #495057 !important;
+}
+
+/* Focus rings on the Metric / Regions / Channels / Products / Palette inputs
+   otherwise show the site's global primaryColor (teal, lib/constants.py's
+   PRIMARY_COLOR), because Mantine sets it via `border-color:
+   var(--mantine-primary-color-filled)` on :focus rather than through a
+   --input-* custom property. */
+.mui-dashboard-page .mantine-Input-input:focus,
+.mui-dashboard-page .mantine-Input-input:focus-within {
+    border-color: #495057 !important;
+}
+
+/* The MultiSelect pills, which pick up the primary colour the same way. */
+.mui-dashboard-page .mantine-Pill-root {
+    --pill-bg: #f1f3f5 !important;
+    --pill-color: #343a40 !important;
+}
+
+/* ---------------------------------------------------------------------------
+   RIGHT-TO-LEFT ENTRANCE, on every view.
+
+   Neither MUI X nor Plotly has an animation-direction setting -- MUI only has
+   `skipAnimation` on/off -- so each view's own animation is switched off in
+   dashboard.py and this replaces it. Two motions at once, both right-to-left:
+
+   - the view SLIDES in from the right (translateX 64px -> 0), so there is
+     visible movement in that direction, not just a reveal;
+   - it is UNCOVERED from its right edge leftwards: `inset(0 0 0 100%)` clips
+     away everything measured from the left, leaving nothing, and animating
+     that left inset down to 0 opens the view from the right.
+
+   A reveal on its own reads as "fading in"; the slide is what makes the
+   direction unmistakable. The `rtl-in` class is added (and re-added) by a
+   clientside callback on every redraw, since a CSS animation only runs when
+   its class first lands -- see the bottom of dashboard.py.
+   --------------------------------------------------------------------------- */
+.mui-dashboard-page .mui-rtl {
+    overflow: hidden;
+}
+
+.mui-dashboard-page .mui-rtl.rtl-in {
+    animation: mui-rtl-reveal 0.95s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes mui-rtl-reveal {
+    from { clip-path: inset(0 0 0 100%); transform: translateX(64px); opacity: 0.4; }
+    to   { clip-path: inset(0 0 0 0);    transform: translateX(0);    opacity: 1; }
+}
+
+/* Anyone who has asked their OS for less motion gets the charts drawn
+   straight away -- MUI X's own animation honours this, so ours should too. */
+@media (prefers-reduced-motion: reduce) {
+    .mui-dashboard-page .mui-rtl.rtl-in {
+        animation: none;
+    }
+}
+
+/* The donut is a filter: say so with the cursor. */
+.mui-dashboard-page #mui-dash-by-channel path {
+    cursor: pointer;
+}
+
+/* The heatmap is a plain <div> under a Graph, styled by its wrapping card
+   like everything else -- nothing heatmap-specific needed here. */

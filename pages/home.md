@@ -16,6 +16,7 @@ Every showcase on this site is a real, running Dash app embedded in its own docu
 | [FlexLayout Playground](/flex-layout) | An IDE-style docking layout holding a small sales dashboard — drag tabs, split panels, resize with the splitters | [dash-flexlayout](https://flexlayout.2plot.dev) (flexlayout-react) |
 | [3D Model Viewer](/model-viewer) | Eight glTF sample models; orbit, zoom, tone mapping, shadows, AR, and a live texture upload | [dash-model-viewer](https://modelviewer.2plot.dev) (Google model-viewer) |
 | [Roamly](/roamly) | A house-only stay booking mockup — listings grid with a globe, a stay page with a gallery and a map, and a host dashboard | [dash-leaflet2](https://leaflet.2plot.dev), [dash-mui-charts](https://muicharts.2plot.dev), dash-image-gallery |
+| [MUI Charts Dashboard](/mui-dashboard) | One dataset of 1,400 orders and five views of it — dmc controls filter the rows, and every MUI X chart is re-derived from what survives | [dash-mui-charts](https://muicharts.2plot.dev) (MUI X Charts) |
 
 ---
 

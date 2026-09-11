@@ -122,6 +122,10 @@ dash_flows>=1.3.0
 # examples/roamly/ (own Dash instance, own port -- `python examples/roamly/app.py`).
 dash_leaflet2>=0.2.2
 dash_image_gallery>=0.0.1
+# dash_mui_charts also carries the /mui-dashboard showcase on its own
+# (docs/mui_dashboard/dashboard.py, embedded by
+# docs/mui_dashboard/mui_dashboard.md, and the standalone
+# examples/mui_dashboard_app.py). MUI X Charts wrapped for Dash.
 dash_mui_charts>=1.4.0
 
 # The /model-viewer showcase (docs/model_viewer/showcase.py, embedded by
