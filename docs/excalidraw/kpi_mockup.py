@@ -506,6 +506,50 @@ def flowchart_sample(origin_x, origin_y, opacity, scale=0.7):
     return bind_flowchart_arrows(elements)
 
 
+def rocket_template(tid, seed, opacity):
+    """A small hand-drawn rocket doodle -- a standalone Library item in the
+    same spirit as hand_drawn_scene (a sketch, not a dashboard element):
+    nose cone, body, porthole window, two fins, an exhaust flame and a
+    scatter of stars. Built from the same _shape/_polygon primitives as
+    everything else here, at roughness=1 (the sketchy default) so it reads
+    as pencilled rather than the KPI cards' clean roughness=0 look.
+    """
+    group_id = f"{tid}-group"
+    body_w, body_h = 70, 130
+    nose_h = 50
+    cx = body_w / 2
+
+    elements = [
+        _polygon(f"{tid}-nose", group_id,
+                 [(cx - body_w / 2, nose_h), (cx, 0), (cx + body_w / 2, nose_h)],
+                 "#7c2d12", "#ef4444", opacity, seed, roughness=1, stroke_width=2),
+        _shape(f"{tid}-body", group_id, "rectangle", 0, nose_h, body_w, body_h,
+               "#334155", "#e2e8f0", opacity, seed + 1, roughness=1, stroke_width=2,
+               roundness={"type": 3, "value": 18}),
+        _shape(f"{tid}-window", group_id, "ellipse", cx - 16, nose_h + 24, 32, 32,
+               "#1d4ed8", "#93c5fd", opacity, seed + 2, roughness=1, stroke_width=2),
+        _polygon(f"{tid}-fin-l", group_id,
+                 [(0, nose_h + body_h - 30), (-26, nose_h + body_h + 10), (0, nose_h + body_h)],
+                 "#7c2d12", "#f97316", opacity, seed + 3, roughness=1, stroke_width=2),
+        _polygon(f"{tid}-fin-r", group_id,
+                 [(body_w, nose_h + body_h - 30), (body_w + 26, nose_h + body_h + 10), (body_w, nose_h + body_h)],
+                 "#7c2d12", "#f97316", opacity, seed + 4, roughness=1, stroke_width=2),
+        _polygon(f"{tid}-flame", group_id,
+                 [(cx - 18, nose_h + body_h), (cx, nose_h + body_h + 46), (cx + 18, nose_h + body_h)],
+                 "#b45309", "#fbbf24", opacity, seed + 5, roughness=1, stroke_width=2),
+    ]
+    # A handful of loose stars scattered around the rocket -- small filled
+    # discs rather than a proper star polygon, the same shorthand _bird()
+    # uses for "distant bird": simple enough to still read at a glance.
+    for i, (dx, dy, r) in enumerate([(-60, 10, 4), (110, 40, 3), (-40, 160, 3), (100, 190, 4)]):
+        elements.append(_shape(
+            f"{tid}-star-{i}", group_id, "ellipse", cx + dx - r, dy - r, r * 2, r * 2,
+            "#facc15", "#facc15", opacity, seed + 10 + i, fill_style="solid",
+            roughness=1, stroke_width=1,
+        ))
+    return {"id": tid, "elements": elements}
+
+
 def _polygon(shape_id, group_id, points, stroke, background, opacity, seed,
              roughness=1, stroke_width=2, fill_style="solid"):
     """A closed, filled shape from arbitrary points -- Excalidraw's `line`
@@ -699,6 +743,9 @@ def build_library_items(opacity):
         # are dropped wherever the cursor is, so they're authored relative
         # to their own top-left corner.
         {"id": "scene-landscape", "elements": hand_drawn_scene(0, 0, opacity)},
+        # A second doodle alongside the landscape, same idea: a sketch, not
+        # a dashboard element, one drag away rather than pre-placed.
+        rocket_template("rocket-doodle", 3700, opacity),
     ]
     # the navbar chips only copy hex codes, and Excalidraw fills a shape with a
     # single colour -- these banded bars are how a gradient actually gets onto
